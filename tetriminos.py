@@ -2,6 +2,17 @@ import pygame
 import settings
 
 
+__all__ = [
+    'ITetrimino',
+    'JTetrimino',
+    'LTetrimino',
+    'OTetrimino',
+    'STetrimino',
+    'TTetrimino',
+    'ZTetrimino'
+]
+
+
 class Block(pygame.sprite.Sprite):
     tetrimino = None
 

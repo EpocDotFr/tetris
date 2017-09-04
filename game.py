@@ -1,7 +1,7 @@
 import pygame
+import tetriminos
 import settings
 import random
-import objects
 import sys
 
 
@@ -27,15 +27,7 @@ class Game:
 
     def update(self):
         if not self.current_tetrimino:
-            self.current_tetrimino = random.choice([
-                objects.ITetrimino,
-                objects.JTetrimino,
-                objects.LTetrimino,
-                objects.OTetrimino,
-                objects.STetrimino,
-                objects.TTetrimino,
-                objects.ZTetrimino
-            ])()
+            self.current_tetrimino = getattr(tetriminos, random.choice(tetriminos.__all__))()
 
             self.current_tetrimino.rect.left = (settings.COLS // 2) * ((self.current_tetrimino.cols // 2) * settings.BLOCKS_SIDE_SIZE)
             self.current_tetrimino.rect.top = 0
