@@ -88,11 +88,12 @@ class Game:
     def _draw(self):
         self.window.fill((255, 255, 255))
 
-        self.current_tetrimino.draw(self.window)
+        if self.current_tetrimino:
+            self.current_tetrimino.draw(self.window)
 
         if settings.DRAW_GRID:
-            for x in range(0, settings.COLS):
+            for x in range(1, settings.COLS):
                 pygame.draw.line(self.window, (225, 225, 225), (x * settings.BLOCKS_SIDE_SIZE, 0), (x * settings.BLOCKS_SIDE_SIZE, self.window_rect.h))
 
-                for y in range(0, settings.ROWS):
-                    pygame.draw.line(self.window, (225, 225, 225), (0, y * settings.BLOCKS_SIDE_SIZE), (self.window_rect.w, y * settings.BLOCKS_SIDE_SIZE))
+            for y in range(1, settings.ROWS):
+                pygame.draw.line(self.window, (225, 225, 225), (0, y * settings.BLOCKS_SIDE_SIZE), (self.window_rect.w, y * settings.BLOCKS_SIDE_SIZE))
