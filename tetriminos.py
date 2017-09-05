@@ -45,7 +45,7 @@ class Tetrimino(pygame.sprite.Group):
         self.rows = len(self.pattern)
         self.cols = len(self.pattern[0])
 
-        self.image = pygame.Surface((self.cols * settings.BLOCKS_SIDE_SIZE, self.rows * settings.BLOCKS_SIDE_SIZE), pygame.SRCALPHA, 32).convert_alpha()
+        self.image = pygame.Surface((self.cols * settings.BLOCKS_SIDE_SIZE + (self.cols * 1), self.rows * settings.BLOCKS_SIDE_SIZE + (self.rows * 1)), pygame.SRCALPHA, 32).convert_alpha()
         self.rect = self.image.get_rect()
 
         for x, x_val in enumerate(self.pattern):
@@ -53,7 +53,7 @@ class Tetrimino(pygame.sprite.Group):
                 if self.pattern[x][y] == 1:
                     block = Block(tetrimino=self)
 
-                    block.rect.topleft = (y * settings.BLOCKS_SIDE_SIZE, x * settings.BLOCKS_SIDE_SIZE)
+                    block.rect.topleft = (y * settings.BLOCKS_SIDE_SIZE + (y + 1 * 1), x * settings.BLOCKS_SIDE_SIZE + (x + 1 * 1))
 
                     self.image.blit(block.image, block.rect)
 

@@ -9,7 +9,7 @@ import sys
 class Game:
     def __init__(self):
         self.clock = pygame.time.Clock()
-        self.window = pygame.display.set_mode((settings.COLS * settings.BLOCKS_SIDE_SIZE, settings.ROWS * settings.BLOCKS_SIDE_SIZE), pygame.DOUBLEBUF)
+        self.window = pygame.display.set_mode((settings.COLS * settings.BLOCKS_SIDE_SIZE + (settings.COLS * 1), settings.ROWS * settings.BLOCKS_SIDE_SIZE + (settings.ROWS * 1)), pygame.DOUBLEBUF)
         self.window_rect = self.window.get_rect()
 
         pygame.display.set_caption('Tetris')
@@ -36,11 +36,14 @@ class Game:
 
         self.current_tetrimino = getattr(tetriminos, random.choice(tetriminos.__all__))()
 
-        self.current_tetrimino.rect.left = (settings.COLS // 2) * ((self.current_tetrimino.cols // 2) * settings.BLOCKS_SIDE_SIZE)
-        self.current_tetrimino.rect.top = 0
+        self.current_tetrimino.rect.left = 1
+        self.current_tetrimino.rect.top = 1
 
     def update(self):
         self._set_current_tetrimino()
+
+        # ----------------------------------------------------------------------
+        # Events handling
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -53,7 +56,13 @@ class Game:
                 else:
                     self._event_game_key(event)
 
-        self._draw()
+        # ----------------------------------------------------------------------
+        # Drawing
+
+        self.window.fill((255, 255, 255))
+
+        self._draw_grid()
+        self._draw_current_tetrimino()
 
         pygame.display.update()
 
@@ -85,15 +94,14 @@ class Game:
     # --------------------------------------------------------------------------
     # Drawing handlers
 
-    def _draw(self):
-        self.window.fill((255, 255, 255))
-
-        if self.current_tetrimino:
-            self.current_tetrimino.draw(self.window)
-
+    def _draw_grid(self):
         if settings.DRAW_GRID:
             for x in range(1, settings.COLS):
-                pygame.draw.line(self.window, (225, 225, 225), (x * settings.BLOCKS_SIDE_SIZE, 0), (x * settings.BLOCKS_SIDE_SIZE, self.window_rect.h))
+                pygame.draw.line(self.window, (225, 225, 225), (x * settings.BLOCKS_SIDE_SIZE + (x * 1), 0), (x * settings.BLOCKS_SIDE_SIZE + (x * 1), self.window_rect.h))
 
             for y in range(1, settings.ROWS):
-                pygame.draw.line(self.window, (225, 225, 225), (0, y * settings.BLOCKS_SIDE_SIZE), (self.window_rect.w, y * settings.BLOCKS_SIDE_SIZE))
+                pygame.draw.line(self.window, (225, 225, 225), (0, y * settings.BLOCKS_SIDE_SIZE + (y * 1)), (self.window_rect.w, y * settings.BLOCKS_SIDE_SIZE + (y * 1)))
+
+    def _draw_current_tetrimino(self):
+        if self.current_tetrimino:
+            self.current_tetrimino.draw(self.window)
