@@ -9,7 +9,7 @@ import sys
 class Game:
     def __init__(self):
         self.clock = pygame.time.Clock()
-        self.window = pygame.display.set_mode((settings.COLS * settings.BLOCKS_SIDE_SIZE + (settings.COLS * 1), settings.ROWS * settings.BLOCKS_SIDE_SIZE + (settings.ROWS * 1)), pygame.DOUBLEBUF)
+        self.window = pygame.display.set_mode((settings.COLS * settings.BLOCKS_SIDE_SIZE + (settings.COLS - 1) * settings.GRID_SPACING, settings.ROWS * settings.BLOCKS_SIDE_SIZE + (settings.ROWS - 1) * settings.GRID_SPACING), pygame.DOUBLEBUF)
         self.window_rect = self.window.get_rect()
 
         pygame.display.set_caption('Tetris')
@@ -18,15 +18,13 @@ class Game:
         self._init_new_game()
 
     def _init_new_game(self):
-        self.well = {}
-
-        for x in range(0, settings.COLS):
-            self.well[x] = {}
-
-            for y in range(0, settings.ROWS):
-                self.well[x][y] = None
-
+        self.blocks = []
         self.current_tetrimino = None
+
+        self.blocks.append(tetriminos.Block((200, 200, 200), 1, 1))
+        self.blocks.append(tetriminos.Block((200, 200, 200), 0, 1))
+        self.blocks.append(tetriminos.Block((200, 200, 200), 0, 0))
+        self.blocks.append(tetriminos.Block((200, 200, 200), 0, 4))
 
         pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_FALLING_INTERVAL)
 
@@ -36,25 +34,16 @@ class Game:
 
         self.current_tetrimino = getattr(tetriminos, random.choice(tetriminos.__all__))()
 
-        self.current_tetrimino.rect.left = 1
-        self.current_tetrimino.rect.top = 1
-
     def update(self):
-        self._set_current_tetrimino()
+        # self._set_current_tetrimino()
 
         # ----------------------------------------------------------------------
         # Events handling
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self._event_quit()
-            elif event.type == settings.TETRIMINOS_FALLING_EVENT:
-                self._event_falling_tetrimino()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    self._event_quit()
-                else:
-                    self._event_game_key(event)
+            self._event_quit(event)
+            # self._event_falling_tetrimino(event)
+            # self._event_game_key(event)
 
         # ----------------------------------------------------------------------
         # Drawing
@@ -62,7 +51,7 @@ class Game:
         self.window.fill((255, 255, 255))
 
         self._draw_grid()
-        self._draw_current_tetrimino()
+        self._draw_blocks()
 
         pygame.display.update()
 
@@ -71,17 +60,24 @@ class Game:
     # --------------------------------------------------------------------------
     # Events handlers
 
-    def _event_quit(self):
-        pygame.quit()
-        sys.exit()
+    def _event_quit(self, event):
+        if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            pygame.quit()
+            sys.exit()
 
-    def _event_falling_tetrimino(self):
-        if self.current_tetrimino.rect.bottom + settings.BLOCKS_SIDE_SIZE > self.window_rect.h:
+    def _event_falling_tetrimino(self, event):
+        if event.type != settings.TETRIMINOS_FALLING_EVENT:
+            return
+
+        if self.current_tetrimino.rect.bottom + settings.BLOCKS_SIDE_SIZE + settings.GRID_SPACING > self.window_rect.h:
             self.current_tetrimino = None
         else:
-            self.current_tetrimino.rect.bottom += settings.BLOCKS_SIDE_SIZE
+            self.current_tetrimino.rect.bottom += settings.BLOCKS_SIDE_SIZE + settings.GRID_SPACING
 
     def _event_game_key(self, event):
+        if event.type != pygame.KEYDOWN:
+            return
+
         if event.key == pygame.K_LEFT and self.current_tetrimino.rect.left - settings.BLOCKS_SIDE_SIZE >= 0:
             self.current_tetrimino.rect.left -= settings.BLOCKS_SIDE_SIZE
         elif event.key == pygame.K_RIGHT and self.current_tetrimino.rect.right + settings.BLOCKS_SIDE_SIZE <= self.window_rect.w:
@@ -97,11 +93,18 @@ class Game:
     def _draw_grid(self):
         if settings.DRAW_GRID:
             for x in range(1, settings.COLS):
-                pygame.draw.line(self.window, (225, 225, 225), (x * settings.BLOCKS_SIDE_SIZE + (x * 1), 0), (x * settings.BLOCKS_SIDE_SIZE + (x * 1), self.window_rect.h))
+                pos = pygame.Rect((x * settings.BLOCKS_SIDE_SIZE + (x - 1) * settings.GRID_SPACING, 0), (settings.GRID_SPACING, self.window_rect.h))
+
+                pygame.draw.rect(self.window, settings.GRID_COLOR, pos)
 
             for y in range(1, settings.ROWS):
-                pygame.draw.line(self.window, (225, 225, 225), (0, y * settings.BLOCKS_SIDE_SIZE + (y * 1)), (self.window_rect.w, y * settings.BLOCKS_SIDE_SIZE + (y * 1)))
+                pos = pygame.Rect((0, y * settings.BLOCKS_SIDE_SIZE + (y - 1) * settings.GRID_SPACING), (self.window_rect.w, settings.GRID_SPACING))
 
-    def _draw_current_tetrimino(self):
-        if self.current_tetrimino:
-            self.current_tetrimino.draw(self.window)
+                pygame.draw.rect(self.window, settings.GRID_COLOR, pos)
+
+    def _draw_blocks(self):
+        for block in self.blocks:
+            block.rect.top = block.y * settings.BLOCKS_SIDE_SIZE + block.y * settings.GRID_SPACING
+            block.rect.left = block.x * settings.BLOCKS_SIDE_SIZE + block.x * settings.GRID_SPACING
+
+            self.window.blit(block.image, block.rect)

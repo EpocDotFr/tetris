@@ -14,46 +14,38 @@ __all__ = [
 
 
 class Block(pygame.sprite.Sprite):
-    tetrimino = None
-
-    def __init__(self, tetrimino):
+    def __init__(self, background_color, x, y):
         super(Block, self).__init__()
 
-        self.tetrimino = tetrimino
+        self.background_color = background_color
+        self.x = x
+        self.y = y
 
-        self._draw()
-
-    def _draw(self):
         self.image = pygame.Surface((settings.BLOCKS_SIDE_SIZE, settings.BLOCKS_SIDE_SIZE), pygame.SRCALPHA, 32).convert_alpha()
-        self.rect = self.image.get_rect()
+        self.image.fill(self.background_color)
 
-        self.image.fill(self.tetrimino.background_color)
+        self.rect = self.image.get_rect()
 
 
 class Tetrimino(pygame.sprite.Group):
-    background_color = None
-    pattern = None
-    rows = None
-    cols = None
-
     def __init__(self):
         super(Tetrimino, self).__init__()
 
         self._draw()
 
     def _draw(self):
-        self.rows = len(self.pattern)
-        self.cols = len(self.pattern[0])
+        self._rows = len(self.pattern)
+        self._cols = len(self.pattern[0])
 
-        self.image = pygame.Surface((self.cols * settings.BLOCKS_SIDE_SIZE + (self.cols * 1), self.rows * settings.BLOCKS_SIDE_SIZE + (self.rows * 1)), pygame.SRCALPHA, 32).convert_alpha()
+        self.image = pygame.Surface((self._cols * settings.BLOCKS_SIDE_SIZE + (self._cols * settings.GRID_SPACING), self._rows * settings.BLOCKS_SIDE_SIZE + (self._rows * settings.GRID_SPACING)), pygame.SRCALPHA, 32).convert_alpha()
         self.rect = self.image.get_rect()
 
         for x, x_val in enumerate(self.pattern):
             for y, y_val in enumerate(self.pattern[x]):
                 if self.pattern[x][y] == 1:
-                    block = Block(tetrimino=self)
+                    block = Block()
 
-                    block.rect.topleft = (y * settings.BLOCKS_SIDE_SIZE + (y + 1 * 1), x * settings.BLOCKS_SIDE_SIZE + (x + 1 * 1))
+                    block.rect.topleft = (y * settings.BLOCKS_SIDE_SIZE + ((y + 1) * settings.GRID_SPACING), x * settings.BLOCKS_SIDE_SIZE + ((x + 1) * settings.GRID_SPACING))
 
                     self.image.blit(block.image, block.rect)
 
