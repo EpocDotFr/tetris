@@ -19,19 +19,15 @@ class Game:
 
     def _init_new_game(self):
         self.fallen_blocks = []
-        self.current_tetrimino = None
+
+        self._set_current_tetrimino()
 
         pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_FALLING_INTERVAL)
 
     def _set_current_tetrimino(self):
-        if self.current_tetrimino:
-            return
-
         self.current_tetrimino = getattr(tetriminos, random.choice(tetriminos.__all__))()
 
     def update(self):
-        self._set_current_tetrimino()
-
         # ----------------------------------------------------------------------
         # Events handling
 
@@ -65,7 +61,10 @@ class Game:
         if event.type != settings.TETRIMINOS_FALLING_EVENT:
             return
 
-        self.current_tetrimino.make_it_fall() # TODO Check it does not go out of the window
+        if not self.current_tetrimino.make_it_fall():
+            self.fallen_blocks.extend(self.current_tetrimino.blocks) # .copy()
+
+            self._set_current_tetrimino()
 
     def _event_game_key(self, event):
         if event.type != pygame.KEYDOWN:
@@ -97,7 +96,7 @@ class Game:
 
     def _draw_blocks(self, blocks):
         for block in blocks:
-            block.rect.top = block.pos_y * settings.BLOCKS_SIDE_SIZE + block.pos_y * settings.GRID_SPACING
-            block.rect.left = block.pos_x * settings.BLOCKS_SIDE_SIZE + block.pos_x * settings.GRID_SPACING
+            block.rect.top = block.pos.y * settings.BLOCKS_SIDE_SIZE + block.pos.y * settings.GRID_SPACING
+            block.rect.left = block.pos.x * settings.BLOCKS_SIDE_SIZE + block.pos.x * settings.GRID_SPACING
 
             self.window.blit(block.image, block.rect)
