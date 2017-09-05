@@ -28,9 +28,9 @@ class Block(pygame.sprite.Sprite):
 
 
 class Tetrimino:
-    def __init__(self, pos_x, pos_y):
-        self.pos_x = pos_x
-        self.pos_y = pos_y
+    def __init__(self):
+        self.pos_x = 3 # TODO Place at the center of the well
+        self.pos_y = 0
 
         self.blocks = []
 
@@ -41,13 +41,23 @@ class Tetrimino:
 
                     self.blocks.append(block)
 
-    def rotate(self):
-        prev_post = self.rect.topleft
+    def make_it_fall(self):
+        for block in self.blocks:
+            block.pos_y += 1
 
-        self.pattern = list(zip(*self.pattern[::-1]))
-        self.image = pygame.transform.rotate(self.image, -90)
-        self.rect = self.image.get_rect()
-        self.rect.topleft = prev_post
+    def move_left(self):
+        for block in self.blocks:
+            block.pos_x -= 1
+
+    def move_right(self):
+        for block in self.blocks:
+            block.pos_x += 1
+
+    def drop(self):
+        pass
+
+    def rotate(self):
+        pass
 
 
 class ITetrimino(Tetrimino):

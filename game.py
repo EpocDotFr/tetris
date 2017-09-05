@@ -27,7 +27,7 @@ class Game:
         if self.current_tetrimino:
             return
 
-        self.current_tetrimino = getattr(tetriminos, random.choice(tetriminos.__all__))(3, 0)
+        self.current_tetrimino = getattr(tetriminos, random.choice(tetriminos.__all__))()
 
     def update(self):
         self._set_current_tetrimino()
@@ -37,8 +37,8 @@ class Game:
 
         for event in pygame.event.get():
             self._event_quit(event)
-            # self._event_falling_tetrimino(event)
-            # self._event_game_key(event)
+            self._event_falling_tetrimino(event)
+            self._event_game_key(event)
 
         # ----------------------------------------------------------------------
         # Drawing
@@ -65,23 +65,20 @@ class Game:
         if event.type != settings.TETRIMINOS_FALLING_EVENT:
             return
 
-        if self.current_tetrimino.rect.bottom + settings.BLOCKS_SIDE_SIZE + settings.GRID_SPACING > self.window_rect.h:
-            self.current_tetrimino = None
-        else:
-            self.current_tetrimino.rect.bottom += settings.BLOCKS_SIDE_SIZE + settings.GRID_SPACING
+        self.current_tetrimino.make_it_fall() # TODO Check it does not go out of the window
 
     def _event_game_key(self, event):
         if event.type != pygame.KEYDOWN:
             return
 
-        if event.key == pygame.K_LEFT and self.current_tetrimino.rect.left - settings.BLOCKS_SIDE_SIZE >= 0:
-            self.current_tetrimino.rect.left -= settings.BLOCKS_SIDE_SIZE
-        elif event.key == pygame.K_RIGHT and self.current_tetrimino.rect.right + settings.BLOCKS_SIDE_SIZE <= self.window_rect.w:
-            self.current_tetrimino.rect.left += settings.BLOCKS_SIDE_SIZE
+        if event.key == pygame.K_LEFT:
+            self.current_tetrimino.move_left() # TODO Check it does not go out of the window
+        elif event.key == pygame.K_RIGHT:
+            self.current_tetrimino.move_right() # TODO Check it does not go out of the window
         elif event.key == pygame.K_DOWN:
-            pass
+            self.current_tetrimino.drop() # TODO Check it does not go out of the window
         elif event.key == pygame.K_UP:
-            self.current_tetrimino.rotate()
+            self.current_tetrimino.rotate() # TODO Check it does not go out of the window
 
     # --------------------------------------------------------------------------
     # Drawing handlers
