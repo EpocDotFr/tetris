@@ -14,12 +14,12 @@ __all__ = [
 
 
 class Block(pygame.sprite.Sprite):
-    def __init__(self, background_color, x, y):
+    def __init__(self, background_color, pos_x, pos_y):
         super(Block, self).__init__()
 
         self.background_color = background_color
-        self.x = x
-        self.y = y
+        self.pos_x = pos_x
+        self.pos_y = pos_y
 
         self.image = pygame.Surface((settings.BLOCKS_SIDE_SIZE, settings.BLOCKS_SIDE_SIZE), pygame.SRCALPHA, 32).convert_alpha()
         self.image.fill(self.background_color)
@@ -27,29 +27,19 @@ class Block(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
 
 
-class Tetrimino(pygame.sprite.Group):
-    def __init__(self):
-        super(Tetrimino, self).__init__()
+class Tetrimino:
+    def __init__(self, pos_x, pos_y):
+        self.pos_x = pos_x
+        self.pos_y = pos_y
 
-        self._draw()
-
-    def _draw(self):
-        self._rows = len(self.pattern)
-        self._cols = len(self.pattern[0])
-
-        self.image = pygame.Surface((self._cols * settings.BLOCKS_SIDE_SIZE + (self._cols * settings.GRID_SPACING), self._rows * settings.BLOCKS_SIDE_SIZE + (self._rows * settings.GRID_SPACING)), pygame.SRCALPHA, 32).convert_alpha()
-        self.rect = self.image.get_rect()
+        self.blocks = []
 
         for x, x_val in enumerate(self.pattern):
             for y, y_val in enumerate(self.pattern[x]):
                 if self.pattern[x][y] == 1:
-                    block = Block()
+                    block = Block(self.background_color, self.pos_x + x, self.pos_y + y)
 
-                    block.rect.topleft = (y * settings.BLOCKS_SIDE_SIZE + ((y + 1) * settings.GRID_SPACING), x * settings.BLOCKS_SIDE_SIZE + ((x + 1) * settings.GRID_SPACING))
-
-                    self.image.blit(block.image, block.rect)
-
-                    self.add(block)
+                    self.blocks.append(block)
 
     def rotate(self):
         prev_post = self.rect.topleft
@@ -58,9 +48,6 @@ class Tetrimino(pygame.sprite.Group):
         self.image = pygame.transform.rotate(self.image, -90)
         self.rect = self.image.get_rect()
         self.rect.topleft = prev_post
-
-    def __repr__(self):
-        return '<{}> {}'.format(self.__class__.__name__, self.pattern)
 
 
 class ITetrimino(Tetrimino):

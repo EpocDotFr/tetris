@@ -18,13 +18,8 @@ class Game:
         self._init_new_game()
 
     def _init_new_game(self):
-        self.blocks = []
+        self.fallen_blocks = []
         self.current_tetrimino = None
-
-        self.blocks.append(tetriminos.Block((200, 200, 200), 1, 1))
-        self.blocks.append(tetriminos.Block((200, 200, 200), 0, 1))
-        self.blocks.append(tetriminos.Block((200, 200, 200), 0, 0))
-        self.blocks.append(tetriminos.Block((200, 200, 200), 0, 4))
 
         pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_FALLING_INTERVAL)
 
@@ -32,10 +27,10 @@ class Game:
         if self.current_tetrimino:
             return
 
-        self.current_tetrimino = getattr(tetriminos, random.choice(tetriminos.__all__))()
+        self.current_tetrimino = getattr(tetriminos, random.choice(tetriminos.__all__))(3, 0)
 
     def update(self):
-        # self._set_current_tetrimino()
+        self._set_current_tetrimino()
 
         # ----------------------------------------------------------------------
         # Events handling
@@ -51,7 +46,8 @@ class Game:
         self.window.fill((255, 255, 255))
 
         self._draw_grid()
-        self._draw_blocks()
+        self._draw_blocks(self.current_tetrimino.blocks)
+        self._draw_blocks(self.fallen_blocks)
 
         pygame.display.update()
 
@@ -102,9 +98,9 @@ class Game:
 
                 pygame.draw.rect(self.window, settings.GRID_COLOR, pos)
 
-    def _draw_blocks(self):
-        for block in self.blocks:
-            block.rect.top = block.y * settings.BLOCKS_SIDE_SIZE + block.y * settings.GRID_SPACING
-            block.rect.left = block.x * settings.BLOCKS_SIDE_SIZE + block.x * settings.GRID_SPACING
+    def _draw_blocks(self, blocks):
+        for block in blocks:
+            block.rect.top = block.pos_y * settings.BLOCKS_SIDE_SIZE + block.pos_y * settings.GRID_SPACING
+            block.rect.left = block.pos_x * settings.BLOCKS_SIDE_SIZE + block.pos_x * settings.GRID_SPACING
 
             self.window.blit(block.image, block.rect)

@@ -4,7 +4,7 @@ import sys
 
 
 FPS = 30
-BLOCKS_SIDE_SIZE = 20
+BLOCKS_SIDE_SIZE = 25
 COLS = 12
 ROWS = 30
 DRAW_GRID = True
