@@ -62,7 +62,7 @@ class Game:
             return
 
         if not self.current_tetrimino.make_it_fall():
-            self.fallen_blocks.extend(self.current_tetrimino.blocks) # .copy()
+            self.fallen_blocks.extend(self.current_tetrimino.blocks.copy())
 
             self._set_current_tetrimino()
 

@@ -13,20 +13,10 @@ __all__ = [
 ]
 
 
-class BasicPos:
+class Pos:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-
-
-class AdvancedPos(BasicPos):
-    def __init__(self, x, y):
-        super(AdvancedPos, self).__init__(x, y)
-
-        self.top = None # TODO
-        self.left = None # TODO
-        self.bottom = None # TODO
-        self.right = None # TODO
 
 
 class Block(pygame.sprite.Sprite):
@@ -47,15 +37,11 @@ class Tetrimino:
         self.rows = len(self.pattern)
         self.cols = len(self.pattern[0])
 
-        self.pos = AdvancedPos(3, 0) # TODO Place at the center of the well
-
-        self._init_blocks()
+        self._init_blocks(3, 0)
 
     def make_it_fall(self):
         if self._is_bottommost():
             return False
-
-        self.pos.y += 1
 
         for block in self.blocks:
             block.pos.y += 1
@@ -66,8 +52,6 @@ class Tetrimino:
         if self._is_leftmost():
             return False
 
-        self.pos.x -= 1
-
         for block in self.blocks:
             block.pos.x -= 1
 
@@ -76,8 +60,6 @@ class Tetrimino:
     def move_right(self):
         if self._is_rightmost():
             return False
-
-        self.pos.x += 1
 
         for block in self.blocks:
             block.pos.x += 1
@@ -92,26 +74,36 @@ class Tetrimino:
 
         self._init_blocks()
 
-    def _init_blocks(self):
+    def _init_blocks(self, x, y):
         self.blocks = []
 
-        for x, x_val in enumerate(self.pattern):
-            for y, y_val in enumerate(self.pattern[x]):
-                if self.pattern[x][y] == 1:
-                    block = Block(self.background_color, BasicPos(self.pos.x + x, self.pos.y + y))
+        for pat_x, x_val in enumerate(self.pattern):
+            for pat_y, y_val in enumerate(self.pattern[pat_x]):
+                if self.pattern[pat_x][pat_y] == 1:
+                    block = Block(self.background_color, Pos(x + pat_x, y + pat_y))
 
                     self.blocks.append(block)
 
     def _is_bottommost(self):
-        return self.pos.y == 2
-        return False # TODO
+        for block in self.blocks:
+            if block.pos.y == settings.ROWS - 1:
+                return True
+
+        return False
 
     def _is_leftmost(self):
-        return False # TODO
+        for block in self.blocks:
+            if block.pos.x == 0:
+                return True
+
+        return False
 
     def _is_rightmost(self):
-        return False # TODO
+        for block in self.blocks:
+            if block.pos.x == settings.COLS - 1:
+                return True
 
+        return False
 
 class ITetrimino(Tetrimino):
     background_color = (0, 255, 255)
