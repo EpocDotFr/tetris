@@ -19,10 +19,12 @@ class Game:
 
         self.current_tetrimino = None
         self.next_tetrimino = None
+        self.is_paused = False
 
         logging.info('Loading fonts')
 
         self.normal_font = utils.load_font('coolvetica.ttf', 18)
+        self.big_font = utils.load_font('coolvetica.ttf', 30)
 
         self._new_game()
 
@@ -49,6 +51,14 @@ class Game:
     def _get_random_tetrimino(self):
         return getattr(tetriminos, random.choice(tetriminos.__all__))
 
+    def _toggle_pause(self):
+        if self.is_paused:
+            pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_FALLING_INTERVAL)
+            self.is_paused = False
+        else:
+            pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, 0)
+            self.is_paused = True
+
     def update(self):
         # ----------------------------------------------------------------------
         # Events handling
@@ -67,6 +77,7 @@ class Game:
         self._draw_blocks(self.current_tetrimino.blocks)
         self._draw_blocks(self.fallen_blocks)
         self._draw_info_panel()
+        self._draw_pause()
 
         pygame.display.update()
 
@@ -93,7 +104,9 @@ class Game:
         if event.type != pygame.KEYDOWN:
             return
 
-        if event.key == pygame.K_LEFT:
+        if event.key == pygame.K_PAUSE:
+            self._toggle_pause()
+        elif event.key == pygame.K_LEFT:
             self.current_tetrimino.move_left() # TODO Check it does not go out of the window
         elif event.key == pygame.K_RIGHT:
             self.current_tetrimino.move_right() # TODO Check it does not go out of the window
@@ -165,13 +178,13 @@ class Game:
 
         self.window.blit(next_tetrimino_label, next_tetrimino_label_rect)
 
-        self._draw_next_tetrimino(settings.PLAYGROUND_WIDTH + 55, next_tetrimino_label_rect.bottom + 20)
+        self._draw_next_tetrimino(settings.PLAYGROUND_WIDTH + 20, next_tetrimino_label_rect.bottom + 10)
 
         # Level label
         level_label = self.normal_font.render('Level', True, settings.TEXT_LIGHT_COLOR)
         level_label_rect = level_label.get_rect()
         level_label_rect.left = settings.PLAYGROUND_WIDTH + 20
-        level_label_rect.top = next_tetrimino_label_rect.bottom + 130
+        level_label_rect.top = next_tetrimino_label_rect.bottom + 110
 
         self.window.blit(level_label, level_label_rect)
 
@@ -179,7 +192,7 @@ class Game:
         level_value = self.normal_font.render(str(self.level), True, settings.TEXT_DARK_COLOR)
         level_value_rect = level_value.get_rect()
         level_value_rect.right = self.window_rect.w - 20
-        level_value_rect.top = next_tetrimino_label_rect.bottom + 130
+        level_value_rect.top = next_tetrimino_label_rect.bottom + 110
 
         self.window.blit(level_value, level_value_rect)
 
@@ -214,3 +227,34 @@ class Game:
         score_value_rect.top = lines_value_rect.bottom + 15
 
         self.window.blit(score_value, score_value_rect)
+
+    def _draw_pause(self):
+        if self.is_paused:
+            # Transparent rect that takes the whole window
+            rect = pygame.Surface(self.window_rect.size)
+            rect.set_alpha(128)
+            rect.fill(settings.WINDOW_BACKGROUND_COLOR)
+
+            self.window.blit(
+                rect,
+                pygame.Rect(
+                    (x * settings.BLOCKS_SIDE_SIZE + (x - 1) * settings.GRID_SPACING, 0),
+                    (settings.GRID_SPACING, settings.PLAYGROUND_HEIGHT)
+                )
+            )
+
+            pygame.draw.rect(
+                self.window,
+                settings.GRID_COLOR,
+                pygame.Rect(
+                    (x * settings.BLOCKS_SIDE_SIZE + (x - 1) * settings.GRID_SPACING, 0),
+                    (settings.GRID_SPACING, settings.PLAYGROUND_HEIGHT)
+                )
+            )
+
+            # "Pause" text
+            pause = self.big_font.render('Pause', True, settings.TEXT_DARK_COLOR)
+            pause_rect = pause.get_rect()
+            pause_rect.center = self.window_rect.center
+
+            self.window.blit(pause, pause_rect)
