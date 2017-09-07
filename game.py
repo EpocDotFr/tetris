@@ -95,18 +95,20 @@ class Game:
     # Drawing handlers
 
     def _draw_playground(self):
+        # Background behind the playground
         pos = pygame.Rect(
             (0, 0),
-            (settings.COLS * settings.BLOCKS_SIDE_SIZE + (settings.COLS - 1) * settings.GRID_SPACING, settings.ROWS * settings.BLOCKS_SIDE_SIZE + (settings.ROWS - 1) * settings.GRID_SPACING)
+            (settings.PLAYGROUND_WIDTH, settings.PLAYGROUND_HEIGHT)
         )
 
         pygame.draw.rect(self.window, settings.PLAYGROUND_BACKGROUND_COLOR, pos)
 
+        # The playground grid (if it should be rendered)
         if settings.DRAW_GRID:
             for x in range(1, settings.COLS):
                 pos = pygame.Rect(
                     (x * settings.BLOCKS_SIDE_SIZE + (x - 1) * settings.GRID_SPACING, 0),
-                    (settings.GRID_SPACING, settings.ROWS * settings.BLOCKS_SIDE_SIZE + (settings.ROWS - 1) * settings.GRID_SPACING)
+                    (settings.GRID_SPACING, settings.PLAYGROUND_HEIGHT)
                 )
 
                 pygame.draw.rect(self.window, settings.GRID_COLOR, pos)
@@ -114,7 +116,7 @@ class Game:
             for y in range(1, settings.ROWS):
                 pos = pygame.Rect(
                     (0, y * settings.BLOCKS_SIDE_SIZE + (y - 1) * settings.GRID_SPACING),
-                    (settings.COLS * settings.BLOCKS_SIDE_SIZE + (settings.COLS - 1) * settings.GRID_SPACING, settings.GRID_SPACING)
+                    (settings.PLAYGROUND_WIDTH, settings.GRID_SPACING)
                 )
 
                 pygame.draw.rect(self.window, settings.GRID_COLOR, pos)
@@ -127,9 +129,42 @@ class Game:
             self.window.blit(block.image, block.rect)
 
     def _draw_info_panel(self):
+        # Next Tetrimino
         next_tetrimino_label = self.normal_font.render('Next', True, settings.TEXT_COLOR)
         next_tetrimino_label_rect = next_tetrimino_label.get_rect()
-        next_tetrimino_label_rect.right = 100
-        next_tetrimino_label_rect.top = 25
+        next_tetrimino_label_rect.left = settings.PLAYGROUND_WIDTH + 20
+        next_tetrimino_label_rect.top = 35
 
         self.window.blit(next_tetrimino_label, next_tetrimino_label_rect)
+
+        # Level label
+        level_label = self.normal_font.render('Level', True, settings.TEXT_COLOR)
+        level_label_rect = level_label.get_rect()
+        level_label_rect.left = settings.PLAYGROUND_WIDTH + 20
+        level_label_rect.top = 100
+
+        self.window.blit(level_label, level_label_rect)
+
+        # Level value
+        level_value = self.normal_font.render('Level', True, settings.TEXT_COLOR)
+        level_value_rect = level_value.get_rect()
+        level_value_rect.left = settings.PLAYGROUND_WIDTH + 20
+        level_value_rect.top = 100
+
+        self.window.blit(level_value, level_value_rect)
+
+        # Lines label
+        lines_label = self.normal_font.render('Lines', True, settings.TEXT_COLOR)
+        lines_label_rect = lines_label.get_rect()
+        lines_label_rect.left = settings.PLAYGROUND_WIDTH + 20
+        lines_label_rect.top = 130
+
+        self.window.blit(lines_label, lines_label_rect)
+
+        # Score label
+        score_label = self.normal_font.render('Score', True, settings.TEXT_COLOR)
+        score_label_rect = score_label.get_rect()
+        score_label_rect.left = settings.PLAYGROUND_WIDTH + 20
+        score_label_rect.top = 160
+
+        self.window.blit(score_label, score_label_rect)
