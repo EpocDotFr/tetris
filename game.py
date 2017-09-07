@@ -17,6 +17,9 @@ class Game:
         pygame.display.set_caption('Tetris')
         pygame.display.set_icon(utils.load_image('icon.png'))
 
+        self.current_tetrimino = None
+        self.next_tetrimino = None
+
         logging.info('Loading fonts')
 
         self.normal_font = utils.load_font('coolvetica.ttf', 18)
@@ -36,7 +39,15 @@ class Game:
     def _set_current_tetrimino(self):
         x = math.floor((settings.COLS - 1) / 2)
 
-        self.current_tetrimino = getattr(tetriminos, random.choice(tetriminos.__all__))(x, 0)
+        if not self.next_tetrimino:
+            self.current_tetrimino = self._get_random_tetrimino()(x, 0)
+        else:
+            self.current_tetrimino = self.next_tetrimino(x, 0)
+
+        self.next_tetrimino = self._get_random_tetrimino()
+
+    def _get_random_tetrimino(self):
+        return getattr(tetriminos, random.choice(tetriminos.__all__))
 
     def update(self):
         # ----------------------------------------------------------------------
@@ -96,12 +107,14 @@ class Game:
 
     def _draw_playground(self):
         # Background behind the playground
-        pos = pygame.Rect(
-            (0, 0),
-            (settings.PLAYGROUND_WIDTH, settings.PLAYGROUND_HEIGHT)
+        pygame.draw.rect(
+            self.window,
+            settings.PLAYGROUND_BACKGROUND_COLOR,
+            pygame.Rect(
+                (0, 0),
+                (settings.PLAYGROUND_WIDTH, settings.PLAYGROUND_HEIGHT)
+            )
         )
-
-        pygame.draw.rect(self.window, settings.PLAYGROUND_BACKGROUND_COLOR, pos)
 
         # The playground grid (if it should be rendered)
         if settings.DRAW_GRID:
@@ -132,6 +145,17 @@ class Game:
 
             self.window.blit(block.image, block.rect)
 
+    def _draw_next_tetrimino(self, x, y):
+        for pat_y, y_val in enumerate(self.next_tetrimino.pattern):
+            for pat_x, x_val in enumerate(self.next_tetrimino.pattern[pat_y]):
+                if self.next_tetrimino.pattern[pat_y][pat_x] == 1:
+                    block = tetriminos.Block(self.next_tetrimino.background_color, pat_x, pat_y)
+
+                    block.rect.top = block.y * settings.BLOCKS_SIDE_SIZE + block.y * settings.GRID_SPACING + y
+                    block.rect.left = block.x * settings.BLOCKS_SIDE_SIZE + block.x * settings.GRID_SPACING + x
+
+                    self.window.blit(block.image, block.rect)
+
     def _draw_info_panel(self):
         # Next Tetrimino
         next_tetrimino_label = self.normal_font.render('Next', True, settings.TEXT_LIGHT_COLOR)
@@ -140,6 +164,8 @@ class Game:
         next_tetrimino_label_rect.top = 20
 
         self.window.blit(next_tetrimino_label, next_tetrimino_label_rect)
+
+        self._draw_next_tetrimino(settings.PLAYGROUND_WIDTH + 55, 60)
 
         # Level label
         level_label = self.normal_font.render('Level', True, settings.TEXT_LIGHT_COLOR)
@@ -150,7 +176,7 @@ class Game:
         self.window.blit(level_label, level_label_rect)
 
         # Level value
-        level_value = self.normal_font.render(str(self.score), True, settings.TEXT_DARK_COLOR)
+        level_value = self.normal_font.render(str(self.level), True, settings.TEXT_DARK_COLOR)
         level_value_rect = level_value.get_rect()
         level_value_rect.right = self.window_rect.w - 20
         level_value_rect.top = next_tetrimino_label_rect.bottom + 130
