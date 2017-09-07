@@ -171,7 +171,7 @@ class Game:
 
     def _draw_info_panel(self):
         # Next Tetrimino
-        next_tetrimino_label = self.normal_font.render('Next', True, settings.TEXT_LIGHT_COLOR)
+        next_tetrimino_label = self.normal_font.render('Next', True, settings.TEXT_COLOR)
         next_tetrimino_label_rect = next_tetrimino_label.get_rect()
         next_tetrimino_label_rect.left = settings.PLAYGROUND_WIDTH + 20
         next_tetrimino_label_rect.top = 15
@@ -181,7 +181,7 @@ class Game:
         self._draw_next_tetrimino(settings.PLAYGROUND_WIDTH + 20, next_tetrimino_label_rect.bottom + 10)
 
         # Level label
-        level_label = self.normal_font.render('Level', True, settings.TEXT_LIGHT_COLOR)
+        level_label = self.normal_font.render('Level', True, settings.TEXT_COLOR)
         level_label_rect = level_label.get_rect()
         level_label_rect.left = settings.PLAYGROUND_WIDTH + 20
         level_label_rect.top = next_tetrimino_label_rect.bottom + 110
@@ -189,7 +189,7 @@ class Game:
         self.window.blit(level_label, level_label_rect)
 
         # Level value
-        level_value = self.normal_font.render(str(self.level), True, settings.TEXT_DARK_COLOR)
+        level_value = self.normal_font.render(str(self.level), True, settings.TEXT_COLOR)
         level_value_rect = level_value.get_rect()
         level_value_rect.right = self.window_rect.w - 20
         level_value_rect.top = next_tetrimino_label_rect.bottom + 110
@@ -197,7 +197,7 @@ class Game:
         self.window.blit(level_value, level_value_rect)
 
         # Lines label
-        lines_label = self.normal_font.render('Lines', True, settings.TEXT_LIGHT_COLOR)
+        lines_label = self.normal_font.render('Lines', True, settings.TEXT_COLOR)
         lines_label_rect = lines_label.get_rect()
         lines_label_rect.left = settings.PLAYGROUND_WIDTH + 20
         lines_label_rect.top = level_label_rect.bottom + 15
@@ -205,7 +205,7 @@ class Game:
         self.window.blit(lines_label, lines_label_rect)
 
         # Lines value
-        lines_value = self.normal_font.render(str(self.lines), True, settings.TEXT_DARK_COLOR)
+        lines_value = self.normal_font.render(str(self.lines), True, settings.TEXT_COLOR)
         lines_value_rect = lines_value.get_rect()
         lines_value_rect.right = self.window_rect.w - 20
         lines_value_rect.top = level_label_rect.bottom + 15
@@ -213,7 +213,7 @@ class Game:
         self.window.blit(lines_value, lines_value_rect)
 
         # Score label
-        score_label = self.normal_font.render('Score', True, settings.TEXT_LIGHT_COLOR)
+        score_label = self.normal_font.render('Score', True, settings.TEXT_COLOR)
         score_label_rect = score_label.get_rect()
         score_label_rect.left = settings.PLAYGROUND_WIDTH + 20
         score_label_rect.top = lines_value_rect.bottom + 15
@@ -221,7 +221,7 @@ class Game:
         self.window.blit(score_label, score_label_rect)
 
         # Score value
-        score_value = self.normal_font.render(str(self.score), True, settings.TEXT_DARK_COLOR)
+        score_value = self.normal_font.render(str(self.score), True, settings.TEXT_COLOR)
         score_value_rect = score_value.get_rect()
         score_value_rect.right = self.window_rect.w - 20
         score_value_rect.top = lines_value_rect.bottom + 15
@@ -232,29 +232,29 @@ class Game:
         if self.is_paused:
             # Transparent rect that takes the whole window
             rect = pygame.Surface(self.window_rect.size)
-            rect.set_alpha(128)
+            rect.set_alpha(200)
             rect.fill(settings.WINDOW_BACKGROUND_COLOR)
 
             self.window.blit(
                 rect,
                 pygame.Rect(
-                    (x * settings.BLOCKS_SIDE_SIZE + (x - 1) * settings.GRID_SPACING, 0),
-                    (settings.GRID_SPACING, settings.PLAYGROUND_HEIGHT)
-                )
-            )
-
-            pygame.draw.rect(
-                self.window,
-                settings.GRID_COLOR,
-                pygame.Rect(
-                    (x * settings.BLOCKS_SIDE_SIZE + (x - 1) * settings.GRID_SPACING, 0),
-                    (settings.GRID_SPACING, settings.PLAYGROUND_HEIGHT)
+                    (0, 0),
+                    self.window_rect.size
                 )
             )
 
             # "Pause" text
-            pause = self.big_font.render('Pause', True, settings.TEXT_DARK_COLOR)
+            pause = self.big_font.render('Pause', True, settings.TEXT_COLOR)
             pause_rect = pause.get_rect()
             pause_rect.center = self.window_rect.center
+            pause_rect.centery -= 15
 
             self.window.blit(pause, pause_rect)
+
+            # Pause tutorial text
+            pause_tutorial = self.normal_font.render('Press "Pause" again to continue', True, settings.TEXT_COLOR)
+            pause_tutorial_rect = pause_tutorial.get_rect()
+            pause_tutorial_rect.center = self.window_rect.center
+            pause_tutorial_rect.centery += 15
+
+            self.window.blit(pause_tutorial, pause_tutorial_rect)
