@@ -6,7 +6,8 @@ import os
 
 
 def run():
-    os.environ['SDL_VIDEO_CENTERED'] = '1' # This makes the window centered on the screen
+    if 'SDL_VIDEO_WINDOW_POS' not in os.environ:
+        os.environ['SDL_VIDEO_CENTERED'] = '1' # This makes the window centered on the screen
 
     logging.basicConfig(
         format='%(asctime)s - %(levelname)s - %(message)s',

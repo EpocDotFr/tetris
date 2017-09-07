@@ -3,13 +3,14 @@ import tetriminos
 import settings
 import random
 import utils
+import math
 import sys
 
 
 class Game:
     def __init__(self):
         self.clock = pygame.time.Clock()
-        self.window = pygame.display.set_mode((settings.COLS * settings.BLOCKS_SIDE_SIZE + (settings.COLS - 1) * settings.GRID_SPACING, settings.ROWS * settings.BLOCKS_SIDE_SIZE + (settings.ROWS - 1) * settings.GRID_SPACING), pygame.DOUBLEBUF)
+        self.window = pygame.display.set_mode(settings.WINDOW_SIZE, pygame.DOUBLEBUF)
         self.window_rect = self.window.get_rect()
 
         pygame.display.set_caption('Tetris')
@@ -25,7 +26,9 @@ class Game:
         pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_FALLING_INTERVAL)
 
     def _set_current_tetrimino(self):
-        self.current_tetrimino = getattr(tetriminos, random.choice(tetriminos.__all__))()
+        x = math.floor((settings.COLS - 1) / 2)
+
+        self.current_tetrimino = getattr(tetriminos, random.choice(tetriminos.__all__))(x, 0)
 
     def update(self):
         # ----------------------------------------------------------------------
@@ -39,9 +42,9 @@ class Game:
         # ----------------------------------------------------------------------
         # Drawing
 
-        self.window.fill((255, 255, 255))
+        self.window.fill(settings.WINDOW_BACKGROUND_COLOR)
 
-        self._draw_grid()
+        self._draw_playground()
         self._draw_blocks(self.current_tetrimino.blocks)
         self._draw_blocks(self.fallen_blocks)
 
@@ -82,21 +85,34 @@ class Game:
     # --------------------------------------------------------------------------
     # Drawing handlers
 
-    def _draw_grid(self):
+    def _draw_playground(self):
+        pos = pygame.Rect(
+            (0, 0),
+            (settings.COLS * settings.BLOCKS_SIDE_SIZE + (settings.COLS - 1) * settings.GRID_SPACING, settings.ROWS * settings.BLOCKS_SIDE_SIZE + (settings.ROWS - 1) * settings.GRID_SPACING)
+        )
+
+        pygame.draw.rect(self.window, settings.PLAYGROUND_BACKGROUND_COLOR, pos)
+
         if settings.DRAW_GRID:
             for x in range(1, settings.COLS):
-                pos = pygame.Rect((x * settings.BLOCKS_SIDE_SIZE + (x - 1) * settings.GRID_SPACING, 0), (settings.GRID_SPACING, self.window_rect.h))
+                pos = pygame.Rect(
+                    (x * settings.BLOCKS_SIDE_SIZE + (x - 1) * settings.GRID_SPACING, 0),
+                    (settings.GRID_SPACING, settings.ROWS * settings.BLOCKS_SIDE_SIZE + (settings.ROWS - 1) * settings.GRID_SPACING)
+                )
 
                 pygame.draw.rect(self.window, settings.GRID_COLOR, pos)
 
             for y in range(1, settings.ROWS):
-                pos = pygame.Rect((0, y * settings.BLOCKS_SIDE_SIZE + (y - 1) * settings.GRID_SPACING), (self.window_rect.w, settings.GRID_SPACING))
+                pos = pygame.Rect(
+                    (0, y * settings.BLOCKS_SIDE_SIZE + (y - 1) * settings.GRID_SPACING),
+                    (settings.COLS * settings.BLOCKS_SIDE_SIZE + (settings.COLS - 1) * settings.GRID_SPACING, settings.GRID_SPACING)
+                )
 
                 pygame.draw.rect(self.window, settings.GRID_COLOR, pos)
 
     def _draw_blocks(self, blocks):
         for block in blocks:
-            block.rect.top = block.pos.y * settings.BLOCKS_SIDE_SIZE + block.pos.y * settings.GRID_SPACING
-            block.rect.left = block.pos.x * settings.BLOCKS_SIDE_SIZE + block.pos.x * settings.GRID_SPACING
+            block.rect.top = block.y * settings.BLOCKS_SIDE_SIZE + block.y * settings.GRID_SPACING
+            block.rect.left = block.x * settings.BLOCKS_SIDE_SIZE + block.x * settings.GRID_SPACING
 
             self.window.blit(block.image, block.rect)
