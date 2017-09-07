@@ -6,7 +6,7 @@ import sys
 # Editable settings
 
 FPS = 30
-BLOCKS_SIDE_SIZE = 25
+BLOCKS_SIDE_SIZE = 20
 
 COLS = 12
 ROWS = 30
@@ -18,7 +18,8 @@ GRID_COLOR = (218, 235, 252)
 WINDOW_BACKGROUND_COLOR = (218, 235, 252)
 PLAYGROUND_BACKGROUND_COLOR = (190, 207, 234)
 
-TEXT_COLOR = (113, 130, 165)
+TEXT_DARK_COLOR = (113, 130, 165)
+TEXT_LIGHT_COLOR = (151, 173, 219)
 
 # ----------------------------------------------------------------------
 # Game constants - do not edit
