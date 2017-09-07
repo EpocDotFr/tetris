@@ -118,7 +118,7 @@ class Game:
 
         # The playground grid (if it should be rendered)
         if settings.DRAW_GRID:
-            for x in range(1, settings.COLS):
+            for x in range(0, settings.COLS + 1):
                 pygame.draw.rect(
                     self.window,
                     settings.GRID_COLOR,
@@ -128,7 +128,7 @@ class Game:
                     )
                 )
 
-            for y in range(1, settings.ROWS):
+            for y in range(0, settings.ROWS + 1):
                 pygame.draw.rect(
                     self.window,
                     settings.GRID_COLOR,
@@ -161,11 +161,11 @@ class Game:
         next_tetrimino_label = self.normal_font.render('Next', True, settings.TEXT_LIGHT_COLOR)
         next_tetrimino_label_rect = next_tetrimino_label.get_rect()
         next_tetrimino_label_rect.left = settings.PLAYGROUND_WIDTH + 20
-        next_tetrimino_label_rect.top = 20
+        next_tetrimino_label_rect.top = 15
 
         self.window.blit(next_tetrimino_label, next_tetrimino_label_rect)
 
-        self._draw_next_tetrimino(settings.PLAYGROUND_WIDTH + 55, 60)
+        self._draw_next_tetrimino(settings.PLAYGROUND_WIDTH + 55, next_tetrimino_label_rect.bottom + 20)
 
         # Level label
         level_label = self.normal_font.render('Level', True, settings.TEXT_LIGHT_COLOR)
@@ -187,7 +187,7 @@ class Game:
         lines_label = self.normal_font.render('Lines', True, settings.TEXT_LIGHT_COLOR)
         lines_label_rect = lines_label.get_rect()
         lines_label_rect.left = settings.PLAYGROUND_WIDTH + 20
-        lines_label_rect.top = level_label_rect.bottom + 20
+        lines_label_rect.top = level_label_rect.bottom + 15
 
         self.window.blit(lines_label, lines_label_rect)
 
@@ -195,7 +195,7 @@ class Game:
         lines_value = self.normal_font.render(str(self.lines), True, settings.TEXT_DARK_COLOR)
         lines_value_rect = lines_value.get_rect()
         lines_value_rect.right = self.window_rect.w - 20
-        lines_value_rect.top = level_label_rect.bottom + 20
+        lines_value_rect.top = level_label_rect.bottom + 15
 
         self.window.blit(lines_value, lines_value_rect)
 
@@ -203,7 +203,7 @@ class Game:
         score_label = self.normal_font.render('Score', True, settings.TEXT_LIGHT_COLOR)
         score_label_rect = score_label.get_rect()
         score_label_rect.left = settings.PLAYGROUND_WIDTH + 20
-        score_label_rect.top = lines_value_rect.bottom + 20
+        score_label_rect.top = lines_value_rect.bottom + 15
 
         self.window.blit(score_label, score_label_rect)
 
@@ -211,6 +211,6 @@ class Game:
         score_value = self.normal_font.render(str(self.score), True, settings.TEXT_DARK_COLOR)
         score_value_rect = score_value.get_rect()
         score_value_rect.right = self.window_rect.w - 20
-        score_value_rect.top = lines_value_rect.bottom + 20
+        score_value_rect.top = lines_value_rect.bottom + 15
 
         self.window.blit(score_value, score_value_rect)
