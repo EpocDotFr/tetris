@@ -1,5 +1,6 @@
 import pygame
 import tetriminos
+import logging
 import settings
 import random
 import utils
@@ -16,10 +17,17 @@ class Game:
         pygame.display.set_caption('Tetris')
         pygame.display.set_icon(utils.load_image('icon.png'))
 
-        self._init_new_game()
+        logging.info('Loading fonts')
 
-    def _init_new_game(self):
+        self.normal_font = utils.load_font('coolvetica.ttf', 18)
+
+        self._new_game()
+
+    def _new_game(self):
         self.fallen_blocks = []
+        self.level = 1
+        self.lines = 0
+        self.score = 0
 
         self._set_current_tetrimino()
 
@@ -47,6 +55,7 @@ class Game:
         self._draw_playground()
         self._draw_blocks(self.current_tetrimino.blocks)
         self._draw_blocks(self.fallen_blocks)
+        self._draw_info_panel()
 
         pygame.display.update()
 
@@ -116,3 +125,11 @@ class Game:
             block.rect.left = block.x * settings.BLOCKS_SIDE_SIZE + block.x * settings.GRID_SPACING
 
             self.window.blit(block.image, block.rect)
+
+    def _draw_info_panel(self):
+        next_tetrimino_label = self.normal_font.render('Next', True, settings.TEXT_COLOR)
+        next_tetrimino_label_rect = next_tetrimino_label.get_rect()
+        next_tetrimino_label_rect.right = 100
+        next_tetrimino_label_rect.top = 25
+
+        self.window.blit(next_tetrimino_label, next_tetrimino_label_rect)

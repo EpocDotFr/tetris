@@ -18,6 +18,8 @@ GRID_COLOR = (218, 235, 252)
 WINDOW_BACKGROUND_COLOR = (218, 235, 252)
 PLAYGROUND_BACKGROUND_COLOR = (190, 207, 234)
 
+TEXT_COLOR = (113, 130, 165)
+
 # ----------------------------------------------------------------------
 # Game constants - do not edit
 
