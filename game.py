@@ -31,6 +31,7 @@ class Game:
         self.current_tetrimino = None
         self.next_tetrimino = None
         self.is_paused = False
+        self.is_game_over = False
 
         logging.info('Loading fonts')
 
@@ -39,10 +40,10 @@ class Game:
 
         if os.path.isfile(settings.SAVE_FILE_NAME):
             self._load_game()
+
+            pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_FALLING_INTERVAL)
         else:
             self._start_new_game()
-
-        pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_FALLING_INTERVAL)
 
     def _start_new_game(self):
         """Start a new game."""
@@ -53,7 +54,11 @@ class Game:
         self.lines = 0
         self.score = 0
 
+        self.is_game_over = False
+
         self._set_current_tetrimino()
+
+        pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_FALLING_INTERVAL)
 
     def _set_current_tetrimino(self):
         """Sets the current falling tetrimino along the next tetrimino."""
@@ -66,12 +71,20 @@ class Game:
 
         self.next_tetrimino = self._get_random_tetrimino()
 
+        # Check if the game is over
+        if self.current_tetrimino.will_collide(self.fallen_blocks, (0, 0)):
+            pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, 0)
+            self.is_game_over = True
+
     def _get_random_tetrimino(self):
         """Get a random reference to a tetrimino class."""
         return getattr(tetriminos, random.choice(tetriminos.__all__))
 
     def _toggle_pause(self):
         """Toggle pause on/off."""
+        if self.is_game_over:
+            return
+
         if self.is_paused:
             pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_FALLING_INTERVAL)
             self.is_paused = False
@@ -92,6 +105,12 @@ class Game:
 
     def _save_game(self):
         """Save the current game."""
+        if self.is_game_over:
+            if os.path.isfile(settings.SAVE_FILE_NAME):
+                os.remove(settings.SAVE_FILE_NAME)
+
+            return
+
         logging.info('Saving current game')
 
         data = {}
@@ -122,7 +141,8 @@ class Game:
         self._draw_blocks(self.current_tetrimino.blocks)
         self._draw_blocks(self.fallen_blocks)
         self._draw_info_panel()
-        self._draw_pause()
+        self._draw_pause_screen()
+        self._draw_game_over_screen()
 
         pygame.display.update()
 
@@ -143,7 +163,7 @@ class Game:
         if event.type != settings.TETRIMINOS_FALLING_EVENT:
             return
 
-        if not self.current_tetrimino.make_it_fall():
+        if not self.current_tetrimino.make_it_fall(self.fallen_blocks):
             self.fallen_blocks.extend(self.current_tetrimino.blocks.copy())
 
             self._set_current_tetrimino()
@@ -158,16 +178,23 @@ class Game:
         elif event.key == pygame.K_F1:
             self._start_new_game()
         elif event.key == pygame.K_LEFT:
-            self.current_tetrimino.move_left() # TODO Check it does not go out of the window
+            self.current_tetrimino.move_left(self.fallen_blocks)
         elif event.key == pygame.K_RIGHT:
-            self.current_tetrimino.move_right() # TODO Check it does not go out of the window
+            self.current_tetrimino.move_right(self.fallen_blocks)
         elif event.key == pygame.K_DOWN:
-            self.current_tetrimino.drop() # TODO Check it does not go out of the window
+            self.current_tetrimino.drop()
         elif event.key == pygame.K_UP:
-            self.current_tetrimino.rotate() # TODO Check it does not go out of the window
+            self.current_tetrimino.rotate()
 
     # --------------------------------------------------------------------------
     # Drawing handlers
+
+    def _draw_grid_line(self, pos, size):
+        pygame.draw.rect(
+            self.window,
+            settings.GRID_COLOR,
+            pygame.Rect(pos, size)
+        )
 
     def _draw_playground(self):
         """Draw the playground."""
@@ -184,23 +211,15 @@ class Game:
         # The playground grid (if it should be rendered)
         if settings.DRAW_GRID:
             for x in range(0, settings.COLS + 1):
-                pygame.draw.rect(
-                    self.window,
-                    settings.GRID_COLOR,
-                    pygame.Rect(
-                        (x * settings.BLOCKS_SIDE_SIZE + (x - 1) * settings.GRID_SPACING, 0),
-                        (settings.GRID_SPACING, settings.PLAYGROUND_HEIGHT)
-                    )
+                self._draw_grid_line(
+                    (x * settings.BLOCKS_SIDE_SIZE + (x - 1) * settings.GRID_SPACING, 0),
+                    (settings.GRID_SPACING, settings.PLAYGROUND_HEIGHT)
                 )
 
             for y in range(0, settings.ROWS + 1):
-                pygame.draw.rect(
-                    self.window,
-                    settings.GRID_COLOR,
-                    pygame.Rect(
-                        (0, y * settings.BLOCKS_SIDE_SIZE + (y - 1) * settings.GRID_SPACING),
-                        (settings.PLAYGROUND_WIDTH, settings.GRID_SPACING)
-                    )
+                self._draw_grid_line(
+                    (0, y * settings.BLOCKS_SIDE_SIZE + (y - 1) * settings.GRID_SPACING),
+                    (settings.PLAYGROUND_WIDTH, settings.GRID_SPACING)
                 )
 
     def _draw_blocks(self, blocks):
@@ -283,34 +302,42 @@ class Game:
 
         self.window.blit(score_value, score_value_rect)
 
-    def _draw_pause(self):
+    def _draw_fullscreen_window(self, title, text):
+        # Transparent rect that takes the whole window
+        rect = pygame.Surface(self.window_rect.size)
+        rect.set_alpha(200)
+        rect.fill(settings.WINDOW_BACKGROUND_COLOR)
+
+        self.window.blit(
+            rect,
+            pygame.Rect(
+                (0, 0),
+                self.window_rect.size
+            )
+        )
+
+        # Title
+        title_label = self.big_font.render(title, True, settings.TEXT_COLOR)
+        title_label_rect = title_label.get_rect()
+        title_label_rect.center = self.window_rect.center
+        title_label_rect.centery -= 15
+
+        self.window.blit(title_label, title_label_rect)
+
+        # Text
+        text_label = self.normal_font.render(text, True, settings.TEXT_COLOR)
+        text_label_rect = text_label.get_rect()
+        text_label_rect.center = self.window_rect.center
+        text_label_rect.centery += 15
+
+        self.window.blit(text_label, text_label_rect)
+
+    def _draw_pause_screen(self):
         """Drawn the Pause screen."""
         if self.is_paused:
-            # Transparent rect that takes the whole window
-            rect = pygame.Surface(self.window_rect.size)
-            rect.set_alpha(200)
-            rect.fill(settings.WINDOW_BACKGROUND_COLOR)
+            self._draw_fullscreen_window('Pause', 'Press "Pause" again to continue')
 
-            self.window.blit(
-                rect,
-                pygame.Rect(
-                    (0, 0),
-                    self.window_rect.size
-                )
-            )
-
-            # "Pause" text
-            pause = self.big_font.render('Pause', True, settings.TEXT_COLOR)
-            pause_rect = pause.get_rect()
-            pause_rect.center = self.window_rect.center
-            pause_rect.centery -= 15
-
-            self.window.blit(pause, pause_rect)
-
-            # Pause tutorial text
-            pause_tutorial = self.normal_font.render('Press "Pause" again to continue', True, settings.TEXT_COLOR)
-            pause_tutorial_rect = pause_tutorial.get_rect()
-            pause_tutorial_rect.center = self.window_rect.center
-            pause_tutorial_rect.centery += 15
-
-            self.window.blit(pause_tutorial, pause_tutorial_rect)
+    def _draw_game_over_screen(self):
+        """Drawn the Game over screen."""
+        if self.is_game_over:
+            self._draw_fullscreen_window('Game over!', 'Press "F1" to start a new game')

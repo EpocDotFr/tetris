@@ -58,9 +58,9 @@ class Tetrimino:
                 if self.pattern[pat_y][pat_x] == 1:
                     self.blocks.append(Block(self.background_color, x + pat_x, y + pat_y))
 
-    def make_it_fall(self):
-        """MAke this tetrimino to fall."""
-        if self._is_bottommost():
+    def make_it_fall(self, fallen_blocks):
+        """Make this Tetrimino to fall."""
+        if self._is_bottommost() or self.will_collide(fallen_blocks, (0, 1)):
             return False
 
         for block in self.blocks:
@@ -68,9 +68,9 @@ class Tetrimino:
 
         return True
 
-    def move_left(self):
-        """Move this tetrimino to the left."""
-        if self._is_leftmost():
+    def move_left(self, fallen_blocks):
+        """Move this Tetrimino to the left."""
+        if self._is_leftmost() or self.will_collide(fallen_blocks, (1, 0)):
             return False
 
         for block in self.blocks:
@@ -78,9 +78,9 @@ class Tetrimino:
 
         return True
 
-    def move_right(self):
-        """Move this tetrimino to the right."""
-        if self._is_rightmost():
+    def move_right(self, fallen_blocks):
+        """Move this Tetrimino to the right."""
+        if self._is_rightmost() or self.will_collide(fallen_blocks, (-1, 0)):
             return False
 
         for block in self.blocks:
@@ -89,15 +89,27 @@ class Tetrimino:
         return True
 
     def drop(self):
-        """Drop this tetrimino."""
-        pass
+        """Drop this Tetrimino."""
+        pass # TODO
 
     def rotate(self):
-        """Rorate this tetrimino."""
-        pass
+        """Rotate this Tetrimino."""
+        pass # TODO
+
+    def will_collide(self, fallen_blocks, direction):
+        """Check if this Tetrimino is about to collide with other blocks in the specified direction."""
+        for block in self.blocks:
+            new_x = block.x + direction[0]
+            new_y = block.y + direction[1]
+
+            for fallen_block in fallen_blocks:
+                if fallen_block.x == new_x and fallen_block.y == new_y:
+                    return True
+
+        return False
 
     def _is_bottommost(self):
-        """Check if this tetrimino is on the bottommost of the playground."""
+        """Check if this Tetrimino is on the bottommost of the playground."""
         for block in self.blocks:
             if block.y == settings.ROWS - 1:
                 return True
@@ -105,7 +117,7 @@ class Tetrimino:
         return False
 
     def _is_leftmost(self):
-        """Check if this tetrimino is on the leftmost of the playground."""
+        """Check if this Tetrimino is on the leftmost of the playground."""
         for block in self.blocks:
             if block.x == 0:
                 return True
@@ -113,7 +125,7 @@ class Tetrimino:
         return False
 
     def _is_rightmost(self):
-        """Check if this tetrimino is on the rightmost of the playground."""
+        """Check if this Tetrimino is on the rightmost of the playground."""
         for block in self.blocks:
             if block.x == settings.COLS - 1:
                 return True
