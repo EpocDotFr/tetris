@@ -72,7 +72,7 @@ class Game:
         self.next_tetrimino = self._get_random_tetrimino()
 
         # Check if the game is over
-        if self.current_tetrimino.will_collide(self.fallen_blocks, (0, 0)):
+        if self.current_tetrimino.will_collide(self.fallen_blocks):
             pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, 0)
             self.is_game_over = True
 

@@ -70,7 +70,7 @@ class Tetrimino:
 
     def move_left(self, fallen_blocks):
         """Move this Tetrimino to the left."""
-        if self._is_leftmost() or self.will_collide(fallen_blocks, (1, 0)):
+        if self._is_leftmost() or self.will_collide(fallen_blocks, (-1, 0)):
             return False
 
         for block in self.blocks:
@@ -80,7 +80,7 @@ class Tetrimino:
 
     def move_right(self, fallen_blocks):
         """Move this Tetrimino to the right."""
-        if self._is_rightmost() or self.will_collide(fallen_blocks, (-1, 0)):
+        if self._is_rightmost() or self.will_collide(fallen_blocks, (1, 0)):
             return False
 
         for block in self.blocks:
@@ -96,7 +96,7 @@ class Tetrimino:
         """Rotate this Tetrimino."""
         pass # TODO
 
-    def will_collide(self, fallen_blocks, direction):
+    def will_collide(self, fallen_blocks, direction=(0, 0)):
         """Check if this Tetrimino is about to collide with other blocks in the specified direction."""
         for block in self.blocks:
             new_x = block.x + direction[0]
