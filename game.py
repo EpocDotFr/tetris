@@ -40,11 +40,11 @@ class Game:
         if os.path.isfile(settings.SAVE_FILE_NAME):
             self._load_game()
         else:
-            self._new_game()
+            self._start_new_game()
 
         pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_FALLING_INTERVAL)
 
-    def _new_game(self):
+    def _start_new_game(self):
         """Start a new game."""
         logging.info('Initializing new game')
 
@@ -155,6 +155,8 @@ class Game:
 
         if event.key == pygame.K_PAUSE:
             self._toggle_pause()
+        elif event.key == pygame.K_F1:
+            self._start_new_game()
         elif event.key == pygame.K_LEFT:
             self.current_tetrimino.move_left() # TODO Check it does not go out of the window
         elif event.key == pygame.K_RIGHT:
