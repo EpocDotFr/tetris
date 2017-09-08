@@ -29,7 +29,7 @@ SAVE_FILE_NAME = 'save.dat'
 RESOURCES_ROOT = os.path.join(sys._MEIPASS, 'resources') if getattr(sys, 'frozen', False) else 'resources'
 
 TETRIMINOS_FALLING_EVENT = pygame.USEREVENT + 1
-TETRIMINOS_FALLING_INTERVAL = 1000
+TETRIMINOS_INITIAL_FALLING_INTERVAL = 1000
 
 INFO_PANEL_WIDTH = 150
 

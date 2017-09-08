@@ -88,10 +88,6 @@ class Tetrimino:
 
         return True
 
-    def drop(self):
-        """Drop this Tetrimino."""
-        pass # TODO
-
     def rotate(self):
         """Rotate this Tetrimino."""
         pass # TODO

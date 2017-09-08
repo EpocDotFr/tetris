@@ -41,7 +41,7 @@ class Game:
         if os.path.isfile(settings.SAVE_FILE_NAME):
             self._load_game()
 
-            pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_FALLING_INTERVAL)
+            pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_INITIAL_FALLING_INTERVAL)
         else:
             self._start_new_game()
 
@@ -58,7 +58,7 @@ class Game:
 
         self._set_current_tetrimino()
 
-        pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_FALLING_INTERVAL)
+        pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_INITIAL_FALLING_INTERVAL)
 
     def _set_current_tetrimino(self):
         """Sets the current falling tetrimino along the next tetrimino."""
@@ -86,7 +86,7 @@ class Game:
             return
 
         if self.is_paused:
-            pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_FALLING_INTERVAL)
+            pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_INITIAL_FALLING_INTERVAL)
             self.is_paused = False
         else:
             pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, 0)
@@ -169,7 +169,7 @@ class Game:
             self._set_current_tetrimino()
 
     def _event_game_key(self, event):
-        """Handle the game kays."""
+        """Handle the game keys."""
         if event.type != pygame.KEYDOWN:
             return
 
@@ -182,7 +182,7 @@ class Game:
         elif event.key == pygame.K_RIGHT:
             self.current_tetrimino.move_right(self.fallen_blocks)
         elif event.key == pygame.K_DOWN:
-            self.current_tetrimino.drop()
+            pass # TODO
         elif event.key == pygame.K_UP:
             self.current_tetrimino.rotate()
 

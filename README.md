@@ -29,7 +29,7 @@ python run.py
   - <kbd>F1</kbd> starts a new game
   - <kbd>←</kbd> and <kbd>→</kbd> moves the Tetrimino respectively to the left and to the right
   - <kbd>↑</kbd> rotates the Tetrimino
-  - <kbd>↓</kbd> drops the Tetrimino
+  - <kbd>↓</kbd> makes the Tetrimino to fall faster
 
 ## How it works
 
