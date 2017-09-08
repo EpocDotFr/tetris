@@ -1,10 +1,11 @@
 from random import choice
+import settings
 import pygame
 import os
-import settings
 
 
 def _get_resource_path(res_type, filename):
+    """Get the path to a resource."""
     path = os.path.join(settings.RESOURCES_ROOT, res_type, filename)
 
     if not os.path.isfile(path):
@@ -14,12 +15,14 @@ def _get_resource_path(res_type, filename):
 
 
 def load_image(filename):
+    """Load an image."""
     path = _get_resource_path('images', filename)
 
     return pygame.image.load(path).convert_alpha()
 
 
 def load_sound(filename, volume=0.5):
+    """Load a sound effect."""
     if volume == 0:
         return
 
@@ -32,6 +35,7 @@ def load_sound(filename, volume=0.5):
 
 
 def load_music(filename, play=True, volume=0.5):
+    """Load a music track."""
     if volume == 0:
         return
 
@@ -45,10 +49,12 @@ def load_music(filename, play=True, volume=0.5):
 
 
 def load_random_music(filenames, play=True, volume=0.5):
+    """Randomly load a music track from a list."""
     load_music(choice(filenames), play, volume)
 
 
 def load_font(filename, size):
+    """Load a font file."""
     path = _get_resource_path('fonts', filename)
 
     return pygame.font.Font(path, size)

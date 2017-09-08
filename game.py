@@ -1,14 +1,25 @@
-import pygame
 import tetriminos
-import logging
 import settings
+import logging
 import random
+import pygame
+import pickle
 import utils
 import math
 import sys
+import os
 
 
 class Game:
+    save_data = [
+        'fallen_blocks',
+        'level',
+        'lines',
+        'score',
+        'current_tetrimino',
+        'next_tetrimino'
+    ]
+
     def __init__(self):
         self.clock = pygame.time.Clock()
         self.window = pygame.display.set_mode(settings.WINDOW_SIZE, pygame.DOUBLEBUF)
@@ -26,9 +37,17 @@ class Game:
         self.normal_font = utils.load_font('coolvetica.ttf', 18)
         self.big_font = utils.load_font('coolvetica.ttf', 30)
 
-        self._new_game()
+        if os.path.isfile(settings.SAVE_FILE_NAME):
+            self._load_game()
+        else:
+            self._new_game()
+
+        pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_FALLING_INTERVAL)
 
     def _new_game(self):
+        """Start a new game."""
+        logging.info('Initializing new game')
+
         self.fallen_blocks = []
         self.level = 1
         self.lines = 0
@@ -36,9 +55,8 @@ class Game:
 
         self._set_current_tetrimino()
 
-        pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_FALLING_INTERVAL)
-
     def _set_current_tetrimino(self):
+        """Sets the current falling tetrimino along the next tetrimino."""
         x = math.floor((settings.COLS - 1) / 2)
 
         if not self.next_tetrimino:
@@ -49,9 +67,11 @@ class Game:
         self.next_tetrimino = self._get_random_tetrimino()
 
     def _get_random_tetrimino(self):
+        """Get a random reference to a tetrimino class."""
         return getattr(tetriminos, random.choice(tetriminos.__all__))
 
     def _toggle_pause(self):
+        """Toggle pause on/off."""
         if self.is_paused:
             pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_FALLING_INTERVAL)
             self.is_paused = False
@@ -59,7 +79,32 @@ class Game:
             pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, 0)
             self.is_paused = True
 
+    def _load_game(self):
+        """Load a saved game."""
+        logging.info('Loading saved game')
+
+        with open(settings.SAVE_FILE_NAME, 'rb') as f:
+            data = pickle.load(f)
+
+        for sd in self.save_data:
+            if sd in data:
+                setattr(self, sd, data[sd])
+
+    def _save_game(self):
+        """Save the current game."""
+        logging.info('Saving current game')
+
+        data = {}
+
+        for sd in self.save_data:
+            data[sd] = getattr(self, sd)
+
+        with open(settings.SAVE_FILE_NAME, 'wb') as f:
+            pickle.dump(data, f)
+
     def update(self):
+        """Perform every updates of the game logic, events handling and drawing."""
+
         # ----------------------------------------------------------------------
         # Events handling
 
@@ -87,11 +132,14 @@ class Game:
     # Events handlers
 
     def _event_quit(self, event):
+        """Called when the game must be closed."""
         if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            self._save_game()
             pygame.quit()
             sys.exit()
 
     def _event_falling_tetrimino(self, event):
+        """Makes the current tetrimino to fall."""
         if event.type != settings.TETRIMINOS_FALLING_EVENT:
             return
 
@@ -101,6 +149,7 @@ class Game:
             self._set_current_tetrimino()
 
     def _event_game_key(self, event):
+        """Handle the game kays."""
         if event.type != pygame.KEYDOWN:
             return
 
@@ -119,6 +168,7 @@ class Game:
     # Drawing handlers
 
     def _draw_playground(self):
+        """Draw the playground."""
         # Background behind the playground
         pygame.draw.rect(
             self.window,
@@ -152,6 +202,7 @@ class Game:
                 )
 
     def _draw_blocks(self, blocks):
+        """Draw a collection of blocks on the playground."""
         for block in blocks:
             block.rect.top = block.y * settings.BLOCKS_SIDE_SIZE + block.y * settings.GRID_SPACING
             block.rect.left = block.x * settings.BLOCKS_SIDE_SIZE + block.x * settings.GRID_SPACING
@@ -159,6 +210,7 @@ class Game:
             self.window.blit(block.image, block.rect)
 
     def _draw_next_tetrimino(self, x, y):
+        """Draw the next tetrimino."""
         for pat_y, y_val in enumerate(self.next_tetrimino.pattern):
             for pat_x, x_val in enumerate(self.next_tetrimino.pattern[pat_y]):
                 if self.next_tetrimino.pattern[pat_y][pat_x] == 1:
@@ -170,6 +222,7 @@ class Game:
                     self.window.blit(block.image, block.rect)
 
     def _draw_info_panel(self):
+        """Draw the information panel."""
         # Next Tetrimino
         next_tetrimino_label = self.normal_font.render('Next', True, settings.TEXT_COLOR)
         next_tetrimino_label_rect = next_tetrimino_label.get_rect()
@@ -229,6 +282,7 @@ class Game:
         self.window.blit(score_value, score_value_rect)
 
     def _draw_pause(self):
+        """Drawn the Pause screen."""
         if self.is_paused:
             # Transparent rect that takes the whole window
             rect = pygame.Surface(self.window_rect.size)

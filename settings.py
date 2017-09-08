@@ -20,6 +20,8 @@ PLAYGROUND_BACKGROUND_COLOR = (190, 207, 234)
 
 TEXT_COLOR = (113, 130, 165)
 
+SAVE_FILE_NAME = 'save.dat'
+
 # ----------------------------------------------------------------------
 # Game constants - do not edit
 

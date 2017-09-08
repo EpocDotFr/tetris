@@ -1,5 +1,5 @@
-import pygame
 import logging
+import pygame
 import game
 import sys
 import os
