@@ -27,6 +27,8 @@ python run.py
   - <kbd>ESC</kbd> closes the game
   - <kbd>PAUSE</kbd> pauses the game
   - <kbd>F1</kbd> starts a new game
+  - <kbd>F2</kbd> loads the latest saved game (if it exists)
+  - <kbd>F3</kbd> displays stats
   - <kbd>←</kbd> and <kbd>→</kbd> moves the Tetrimino respectively to the left and to the right
   - <kbd>↑</kbd> rotates the Tetrimino
   - <kbd>↓</kbd> makes the Tetrimino to fall faster

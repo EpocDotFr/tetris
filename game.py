@@ -30,20 +30,13 @@ class Game:
 
         self.current_tetrimino = None
         self.next_tetrimino = None
-        self.is_paused = False
-        self.is_game_over = False
 
         logging.info('Loading fonts')
 
         self.normal_font = utils.load_font('coolvetica.ttf', 18)
         self.big_font = utils.load_font('coolvetica.ttf', 30)
 
-        if os.path.isfile(settings.SAVE_FILE_NAME):
-            self._load_game()
-
-            pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_INITIAL_FALLING_INTERVAL)
-        else:
-            self._start_new_game()
+        self._start_new_game()
 
     def _start_new_game(self):
         """Start a new game."""
@@ -95,6 +88,9 @@ class Game:
 
     def _load_game(self):
         """Load a saved game."""
+        if not os.path.isfile(settings.SAVE_FILE_NAME):
+            return
+
         logging.info('Loading saved game')
 
         with open(settings.SAVE_FILE_NAME, 'rb') as f:
@@ -103,6 +99,8 @@ class Game:
         for sd in self.save_data:
             if sd in data:
                 setattr(self, sd, data[sd])
+
+        pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_INITIAL_FALLING_INTERVAL)
 
     def _save_game(self):
         """Save the current game."""
@@ -214,6 +212,10 @@ class Game:
             self._toggle_pause()
         elif event.key == pygame.K_F1:
             self._start_new_game()
+        elif event.key == pygame.K_F2:
+            self._load_game()
+        elif event.key == pygame.K_F3:
+            pass # TODO
         elif event.key == pygame.K_LEFT:
             self.current_tetrimino.move_left(self.fallen_blocks)
         elif event.key == pygame.K_RIGHT:
