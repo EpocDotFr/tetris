@@ -22,14 +22,17 @@ TEXT_COLOR = (113, 130, 165)
 
 SAVE_FILE_NAME = 'save.dat'
 
+TETRIMINOS_INITIAL_FALLING_INTERVAL = 100
+
+COMPLETED_LINE_SCORE = 10
+
 # ----------------------------------------------------------------------
-# Game constants - do not edit
+# Game constants - do not edit anything after this line
 
 # When frozen by PyInstaller, the path to the resources is different
 RESOURCES_ROOT = os.path.join(sys._MEIPASS, 'resources') if getattr(sys, 'frozen', False) else 'resources'
 
 TETRIMINOS_FALLING_EVENT = pygame.USEREVENT + 1
-TETRIMINOS_INITIAL_FALLING_INTERVAL = 1000
 
 INFO_PANEL_WIDTH = 150
 

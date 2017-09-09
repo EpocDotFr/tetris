@@ -54,6 +54,7 @@ class Game:
         self.lines = 0
         self.score = 0
 
+        self.is_paused = False
         self.is_game_over = False
 
         self._set_current_tetrimino()
@@ -61,7 +62,7 @@ class Game:
         pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_INITIAL_FALLING_INTERVAL)
 
     def _set_current_tetrimino(self):
-        """Sets the current falling tetrimino along the next tetrimino."""
+        """Sets the current falling Tetrimino along the next Tetrimino."""
         x = math.floor((settings.COLS - 1) / 2)
 
         if not self.next_tetrimino:
@@ -121,6 +122,41 @@ class Game:
         with open(settings.SAVE_FILE_NAME, 'wb') as f:
             pickle.dump(data, f)
 
+    def _process_lines(self):
+        """For each completed lines: remove them and make everything to fall."""
+        completed_lines = {}
+
+        # First, count the number of blocks in each lines
+        for block in self.fallen_blocks:
+            if block.y not in completed_lines:
+                completed_lines[block.y] = 0
+
+            completed_lines[block.y] += 1
+
+        # Second, for each completed lines, remove them
+        for y, total in completed_lines.copy().items():
+            if total == settings.COLS:
+                for i, block in enumerate(self.fallen_blocks):
+                    if block.y != y:
+                        continue
+
+                    del self.fallen_blocks[i]
+            else:
+                del completed_lines[y] # Remove uncompleted lines counts
+
+        completed_lines_count = len(completed_lines)
+
+        # Third, make the whole playground to fall for the number of completed lines
+        # for i in range(0, completed_lines_count):
+        #     for block in self.fallen_blocks:
+        #         if block.is_bottommost():
+        #             continue
+
+        #         block.y += 1
+
+        # Finally, increase the score by the number of completed lines
+        self.score += completed_lines_count * settings.COMPLETED_LINE_SCORE
+
     def update(self):
         """Perform every updates of the game logic, events handling and drawing."""
 
@@ -166,6 +202,7 @@ class Game:
         if not self.current_tetrimino.make_it_fall(self.fallen_blocks):
             self.fallen_blocks.extend(self.current_tetrimino.blocks.copy())
 
+            self._process_lines()
             self._set_current_tetrimino()
 
     def _event_game_key(self, event):
@@ -231,7 +268,7 @@ class Game:
             self.window.blit(block.image, block.rect)
 
     def _draw_next_tetrimino(self, x, y):
-        """Draw the next tetrimino."""
+        """Draw the next Tetrimino in the info panel."""
         for pat_y, y_val in enumerate(self.next_tetrimino.pattern):
             for pat_x, x_val in enumerate(self.next_tetrimino.pattern[pat_y]):
                 if self.next_tetrimino.pattern[pat_y][pat_x] == 1:

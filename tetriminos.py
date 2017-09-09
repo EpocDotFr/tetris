@@ -45,6 +45,38 @@ class Block(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect()
 
+    def will_collide(self, fallen_blocks, direction=(0, 0)):
+        """Check if this block is about to collide with other blocks in the specified direction."""
+        new_x = self.x + direction[0]
+        new_y = self.y + direction[1]
+
+        for fallen_block in fallen_blocks:
+            if fallen_block.x == new_x and fallen_block.y == new_y:
+                return True
+
+        return False
+
+    def is_bottommost(self):
+        """Check if this block is on the bottommost of the playground."""
+        if self.y == settings.ROWS - 1:
+            return True
+
+        return False
+
+    def is_leftmost(self):
+        """Check if this block is on the leftmost of the playground."""
+        if self.x == 0:
+            return True
+
+        return False
+
+    def is_rightmost(self):
+        """Check if this block is on the rightmost of the playground."""
+        if self.x == settings.COLS - 1:
+            return True
+
+        return False
+
 
 class Tetrimino:
     def __init__(self, x, y):
@@ -59,8 +91,8 @@ class Tetrimino:
                     self.blocks.append(Block(self.background_color, x + pat_x, y + pat_y))
 
     def make_it_fall(self, fallen_blocks):
-        """Make this Tetrimino to fall."""
-        if self._is_bottommost() or self.will_collide(fallen_blocks, (0, 1)):
+        """Makes this Tetrimino to fall."""
+        if self.is_bottommost() or self.will_collide(fallen_blocks, (0, 1)):
             return False
 
         for block in self.blocks:
@@ -69,8 +101,8 @@ class Tetrimino:
         return True
 
     def move_left(self, fallen_blocks):
-        """Move this Tetrimino to the left."""
-        if self._is_leftmost() or self.will_collide(fallen_blocks, (-1, 0)):
+        """Moves this Tetrimino to the left."""
+        if self.is_leftmost() or self.will_collide(fallen_blocks, (-1, 0)):
             return False
 
         for block in self.blocks:
@@ -79,8 +111,8 @@ class Tetrimino:
         return True
 
     def move_right(self, fallen_blocks):
-        """Move this Tetrimino to the right."""
-        if self._is_rightmost() or self.will_collide(fallen_blocks, (1, 0)):
+        """Moves this Tetrimino to the right."""
+        if self.is_rightmost() or self.will_collide(fallen_blocks, (1, 0)):
             return False
 
         for block in self.blocks:
@@ -89,41 +121,37 @@ class Tetrimino:
         return True
 
     def rotate(self):
-        """Rotate this Tetrimino."""
+        """Rotates this Tetrimino."""
         pass # TODO
 
     def will_collide(self, fallen_blocks, direction=(0, 0)):
         """Check if this Tetrimino is about to collide with other blocks in the specified direction."""
         for block in self.blocks:
-            new_x = block.x + direction[0]
-            new_y = block.y + direction[1]
-
-            for fallen_block in fallen_blocks:
-                if fallen_block.x == new_x and fallen_block.y == new_y:
-                    return True
+            if block.will_collide(fallen_blocks, direction):
+                return True
 
         return False
 
-    def _is_bottommost(self):
+    def is_bottommost(self):
         """Check if this Tetrimino is on the bottommost of the playground."""
         for block in self.blocks:
-            if block.y == settings.ROWS - 1:
+            if block.is_bottommost():
                 return True
 
         return False
 
-    def _is_leftmost(self):
+    def is_leftmost(self):
         """Check if this Tetrimino is on the leftmost of the playground."""
         for block in self.blocks:
-            if block.x == 0:
+            if block.is_leftmost():
                 return True
 
         return False
 
-    def _is_rightmost(self):
+    def is_rightmost(self):
         """Check if this Tetrimino is on the rightmost of the playground."""
         for block in self.blocks:
-            if block.x == settings.COLS - 1:
+            if block.is_rightmost():
                 return True
 
         return False

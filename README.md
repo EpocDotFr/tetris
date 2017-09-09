@@ -42,6 +42,8 @@ performed by the `build_*` scripts to be run in the corresponding OS.
 
 ## Credits
 
+  - Icon by [Everaldo Coelho](https://www.iconfinder.com/icons/3459/computer_game_tetris_icon) (freeware)
+  - Font by [Typodermic Fonts Inc](http://www.dafont.com/coolvetica.font) (freeware)
   - Tetris™ and Tetriminos™ are trademarks of The Tetris Company. This project isn't supported nor endorsed by The Tetris Company
 
 ## End words
