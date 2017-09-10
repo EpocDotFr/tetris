@@ -47,12 +47,19 @@ class Game:
         self.lines = 0
         self.score = 0
 
-        self._set_current_tetrimino()
-
         self.is_paused = False
         self.is_game_over = False
 
-        pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_INITIAL_FALLING_INTERVAL)
+        self._set_current_tetrimino()
+        self._enable_or_update_falling_interval()
+
+    def _enable_or_update_falling_interval(self):
+        """Starts othe Tetrimino's falling."""
+        pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_INITIAL_FALLING_INTERVAL - self.level * settings.FALLING_INTERVAL_DECREASE_STEP)
+
+    def _disable_falling_interval(self):
+        """Stops the Tetrimino's falling."""
+        pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, 0)
 
     def _set_current_tetrimino(self):
         """Sets the current falling Tetrimino along the next Tetrimino."""
@@ -67,7 +74,7 @@ class Game:
 
         # Check if the game is over
         if self.current_tetrimino.will_collide(self.fallen_blocks):
-            pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, 0)
+            self._disable_falling_interval()
             self.is_game_over = True
 
             logging.info('Game over')
@@ -82,12 +89,12 @@ class Game:
             return
 
         if self.is_paused:
-            pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_INITIAL_FALLING_INTERVAL)
+            self._enable_or_update_falling_interval()
             self.is_paused = False
 
             logging.info('Game unpaused')
         else:
-            pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, 0)
+            self._disable_falling_interval()
             self.is_paused = True
 
             logging.info('Game paused')
@@ -110,7 +117,7 @@ class Game:
         self.is_paused = False
         self.is_game_over = False
 
-        pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_INITIAL_FALLING_INTERVAL)
+        self._enable_or_update_falling_interval()
 
     def _save_game(self):
         """Save the current game."""
@@ -128,14 +135,14 @@ class Game:
         """For each completed lines: remove them and make everything to fall."""
         completed_lines = {}
 
-        # First, count the number of blocks in each lines
+        # Count the number of blocks in each lines
         for block in self.fallen_blocks:
             if block.y not in completed_lines:
                 completed_lines[block.y] = 0
 
             completed_lines[block.y] += 1
 
-        # Second, for each completed lines, remove them
+        # For each completed lines, remove each block in them
         for y, total in completed_lines.copy().items():
             if total == settings.COLS:
                 for block in self.fallen_blocks:
@@ -151,7 +158,7 @@ class Game:
         if completed_lines_count == 0: # There wasn't any completed lines at all
             return
 
-        # Third, make the whole playground to fall above the bottommost completed line
+        # Make all blocks above the bottommost completed line to fall
         # for i in range(0, completed_lines_count):
         #     for block in self.fallen_blocks:
         #         if block.is_bottommost():
@@ -159,7 +166,7 @@ class Game:
 
         #         block.y += 1
 
-        # Finally, increase the score by the number of completed lines
+        # Compute and update the score as well as the lines count
         score_to_add = completed_lines_count * settings.COMPLETED_LINE_SCORE
 
         # If four lines were completed at one time, it's a Tetris, so double the score
@@ -167,6 +174,15 @@ class Game:
             score_to_add *= 2
 
         self.score += score_to_add
+        self.lines += completed_lines_count
+
+        new_level = len(list(range(0, self.lines, settings.LEVEL_INCREASE_STEP)))
+
+        # Did we reached a new level of difficulty?
+        if self.level != new_level:
+            self.level = new_level
+
+            self._enable_or_update_falling_interval()
 
     def update(self):
         """Perform every updates of the game logic, events handling and drawing.
@@ -240,6 +256,7 @@ class Game:
     # Drawing handlers
 
     def _draw_grid_line(self, pos, size):
+        """Draw a grid line."""
         pygame.draw.rect(
             self.window,
             settings.GRID_COLOR,
