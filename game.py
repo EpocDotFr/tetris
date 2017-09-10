@@ -148,7 +148,7 @@ class Game:
         # For each completed lines, remove each block in them
         for y, total in completed_lines.copy().items():
             if total == settings.COLS:
-                for block in self.fallen_blocks:
+                for block in self.fallen_blocks: # TODO For an unknown reason, not all blocks are being removed
                     if block.y != y:
                         continue
 
@@ -162,6 +162,7 @@ class Game:
             return
 
         # Make all blocks above the bottommost completed line to fall
+        # TODO
         # for i in range(0, completed_lines_count):
         #     for block in self.fallen_blocks:
         #         if block.is_bottommost():
@@ -201,7 +202,10 @@ class Game:
         self.window.fill(settings.WINDOW_BACKGROUND_COLOR)
 
         self._draw_playground()
-        self._draw_blocks(self.current_tetrimino.blocks)
+
+        if not self.is_game_over:
+            self._draw_blocks(self.current_tetrimino.blocks)
+
         self._draw_blocks(self.fallen_blocks)
         self._draw_info_panel()
         self._draw_pause_screen()
@@ -245,13 +249,13 @@ class Game:
         elif event.key == pygame.K_F2:
             self._load_game()
         elif event.key == pygame.K_F3:
-            pass # TODO
+            pass # TODO Stats screen
         elif event.key == pygame.K_LEFT:
             self.current_tetrimino.move_left(self.fallen_blocks)
         elif event.key == pygame.K_RIGHT:
             self.current_tetrimino.move_right(self.fallen_blocks)
         elif event.key == pygame.K_DOWN:
-            pass # TODO
+            pass # TODO Make the Tetrimino to fall faster
         elif event.key == pygame.K_UP:
             self.current_tetrimino.rotate()
 
