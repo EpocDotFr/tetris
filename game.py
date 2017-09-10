@@ -138,12 +138,11 @@ class Game:
         # Second, for each completed lines, remove them
         for y, total in completed_lines.copy().items():
             if total == settings.COLS:
-                for i, block in enumerate(self.fallen_blocks):
+                for block in self.fallen_blocks:
                     if block.y != y:
-                        print(block.y, y)
                         continue
 
-                    del self.fallen_blocks[i]
+                    self.fallen_blocks.remove(block)
             else:
                 del completed_lines[y] # Remove uncompleted lines counts
 
@@ -170,19 +169,16 @@ class Game:
         self.score += score_to_add
 
     def update(self):
-        """Perform every updates of the game logic, events handling and drawing."""
+        """Perform every updates of the game logic, events handling and drawing.
+        Also known as the game loop."""
 
-        # ----------------------------------------------------------------------
         # Events handling
-
         for event in pygame.event.get():
             self._event_quit(event)
             self._event_falling_tetrimino(event)
             self._event_game_key(event)
 
-        # ----------------------------------------------------------------------
-        # Drawing
-
+        # Drawings
         self.window.fill(settings.WINDOW_BACKGROUND_COLOR)
 
         self._draw_playground()
@@ -192,6 +188,7 @@ class Game:
         self._draw_pause_screen()
         self._draw_game_over_screen()
 
+        # PyGame-related updates
         pygame.display.update()
 
         self.clock.tick(settings.FPS)
@@ -356,6 +353,7 @@ class Game:
         self.window.blit(score_value, score_value_rect)
 
     def _draw_fullscreen_window(self, title, text):
+        """Draw a title and a text in the middle of the screen."""
         # Transparent rect that takes the whole window
         rect = pygame.Surface(self.window_rect.size)
         rect.set_alpha(200)
