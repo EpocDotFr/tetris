@@ -43,14 +43,19 @@ python run.py
 This game is built on top of [PyGame](http://www.pygame.org/hifi.html). I obviously can't explain how it
 works here, so you'll have to jump yourself in the source code. Start with the entry point, `run.py`.
 
-Beside the game itself, I use [PyInstaller](http://www.pyinstaller.org/) to generate the executables. It packs up all the
-game and its assets in a single executable file so players just have to run it with nothing to install. This task is
-performed by the `build_*` scripts to be run in the corresponding OS.
+Beside the game itself, I use [PyInstaller](http://www.pyinstaller.org/) to generate the executables. It packs
+up all the game and its assets in a single executable file so players just have to run it with nothing to install.
+This task is performed by the `build_*` scripts to be run in the corresponding OS.
 
 ### Scoring
 
-Each completed lines is worth 10 points. If you have completed 4 lines at once (also called a "tetris"), the score is
-multiplied by 2, so (4 x 10) x 2 = 80 points.
+Each completed lines is worth 10 points. If you have completed 4 lines at once (also called a "tetris"), the score
+is multiplied by 2, so (4 lines x 10 points ) x 2 = 80 points.
+
+### Levels
+
+You get to the next level every 10 completed lines. Tetriminos will fall 100 milliseconds faster for each gained
+levels (they are initially falling for one block down every 1 second).
 
 ## Credits
 
