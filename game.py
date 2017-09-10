@@ -121,6 +121,9 @@ class Game:
 
     def _save_game(self):
         """Save the current game."""
+        if self.is_game_over:
+            return
+
         logging.info('Saving current game')
 
         data = {}
@@ -371,6 +374,9 @@ class Game:
 
     def _draw_fullscreen_window(self, title, text):
         """Draw a title and a text in the middle of the screen."""
+        if isinstance(text, str):
+            text = [text]
+
         # Transparent rect that takes the whole window
         rect = pygame.Surface(self.window_rect.size)
         rect.set_alpha(200)
@@ -393,19 +399,30 @@ class Game:
         self.window.blit(title_label, title_label_rect)
 
         # Text
-        text_label = self.normal_font.render(text, True, settings.TEXT_COLOR)
-        text_label_rect = text_label.get_rect()
-        text_label_rect.center = self.window_rect.center
-        text_label_rect.centery += 15
+        spacing = 15
 
-        self.window.blit(text_label, text_label_rect)
+        for t in text:
+            text_label = self.normal_font.render(t, True, settings.TEXT_COLOR)
+            text_label_rect = text_label.get_rect()
+            text_label_rect.center = self.window_rect.center
+            text_label_rect.centery += spacing
+
+            self.window.blit(text_label, text_label_rect)
+
+            spacing += 20
 
     def _draw_pause_screen(self):
         """Drawn the Pause screen."""
         if self.is_paused:
-            self._draw_fullscreen_window('Pause', 'Press "Pause" again to continue')
+            self._draw_fullscreen_window('Pause', 'Press "Pause" again to continue.')
 
     def _draw_game_over_screen(self):
         """Drawn the Game over screen."""
         if self.is_game_over:
-            self._draw_fullscreen_window('Game over!', 'Press "F1" to start a new game')
+            recap_string = [
+                'You completed {} lines, which gained you'.format(self.lines),
+                'to the level {} with a score of {}.'.format(self.level, self.score),
+                'Press "F1" to start a new game.'
+            ]
+
+            self._draw_fullscreen_window('Game over!', recap_string)
