@@ -47,10 +47,10 @@ class Game:
         self.lines = 0
         self.score = 0
 
+        self._set_current_tetrimino()
+
         self.is_paused = False
         self.is_game_over = False
-
-        self._set_current_tetrimino()
 
         pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_INITIAL_FALLING_INTERVAL)
 
@@ -70,8 +70,10 @@ class Game:
             pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, 0)
             self.is_game_over = True
 
+            logging.info('Game over')
+
     def _get_random_tetrimino(self):
-        """Get a random reference to a tetrimino class."""
+        """Get a random reference to a Tetrimino class."""
         return getattr(tetriminos, random.choice(tetriminos.__all__))
 
     def _toggle_pause(self):
@@ -82,13 +84,18 @@ class Game:
         if self.is_paused:
             pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_INITIAL_FALLING_INTERVAL)
             self.is_paused = False
+
+            logging.info('Game unpaused')
         else:
             pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, 0)
             self.is_paused = True
 
+            logging.info('Game paused')
+
     def _load_game(self):
         """Load a saved game."""
         if not os.path.isfile(settings.SAVE_FILE_NAME):
+            logging.info('Save file does not exists')
             return
 
         logging.info('Loading saved game')
@@ -100,16 +107,13 @@ class Game:
             if sd in data:
                 setattr(self, sd, data[sd])
 
+        self.is_paused = False
+        self.is_game_over = False
+
         pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_INITIAL_FALLING_INTERVAL)
 
     def _save_game(self):
         """Save the current game."""
-        if self.is_game_over:
-            if os.path.isfile(settings.SAVE_FILE_NAME):
-                os.remove(settings.SAVE_FILE_NAME)
-
-            return
-
         logging.info('Saving current game')
 
         data = {}
@@ -136,6 +140,7 @@ class Game:
             if total == settings.COLS:
                 for i, block in enumerate(self.fallen_blocks):
                     if block.y != y:
+                        print(block.y, y)
                         continue
 
                     del self.fallen_blocks[i]
@@ -144,7 +149,10 @@ class Game:
 
         completed_lines_count = len(completed_lines)
 
-        # Third, make the whole playground to fall for the number of completed lines
+        if completed_lines_count == 0: # There wasn't any completed lines at all
+            return
+
+        # Third, make the whole playground to fall above the bottommost completed line
         # for i in range(0, completed_lines_count):
         #     for block in self.fallen_blocks:
         #         if block.is_bottommost():
@@ -153,7 +161,13 @@ class Game:
         #         block.y += 1
 
         # Finally, increase the score by the number of completed lines
-        self.score += completed_lines_count * settings.COMPLETED_LINE_SCORE
+        score_to_add = completed_lines_count * settings.COMPLETED_LINE_SCORE
+
+        # If four lines were completed at one time, it's a Tetris, so double the score
+        if completed_lines_count == 4:
+            score_to_add *= 2
+
+        self.score += score_to_add
 
     def update(self):
         """Perform every updates of the game logic, events handling and drawing."""

@@ -6,7 +6,12 @@ The [Tetris](https://en.wikipedia.org/wiki/Tetris) game, implemented in Python.
 
 ## Features
 
-> TODO
+  - All the Tetris rules
+  - State of the art graphics
+  - Automatic game saving when quitting
+  - Ability to load the latest saved game
+  - Ability to pause the game
+  - Stats
 
 ## Prerequisites
 
@@ -22,7 +27,7 @@ Clone this repo, and then the usual `pip install -r requirements.txt`.
 python run.py
 ```
 
-## Controls
+### Controls
 
   - <kbd>ESC</kbd> closes the game
   - <kbd>PAUSE</kbd> pauses the game
@@ -41,6 +46,11 @@ works here, so you'll have to jump yourself in the source code. Start with the e
 Beside the game itself, I use [PyInstaller](http://www.pyinstaller.org/) to generate the executables. It packs up all the
 game and its assets in a single executable file so players just have to run it with nothing to install. This task is
 performed by the `build_*` scripts to be run in the corresponding OS.
+
+### Scoring
+
+Each completed lines is worth 10 points. If you have completed 4 lines at once (also called a "tetris"), the score is
+multiplied by 2, so (4 x 10) x 2 = 80 points.
 
 ## Credits
 

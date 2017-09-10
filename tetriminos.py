@@ -121,7 +121,7 @@ class Tetrimino:
         return True
 
     def rotate(self):
-        """Rotates this Tetrimino."""
+        """Rotates this Tetrimino by 90° to the right."""
         pass # TODO
 
     def will_collide(self, fallen_blocks, direction=(0, 0)):
