@@ -5,6 +5,8 @@ import random
 import pygame
 import pickle
 import utils
+import json
+import time
 import math
 import sys
 import os
@@ -19,6 +21,15 @@ class Game:
         'current_tetrimino',
         'next_tetrimino'
     ]
+
+    stats = {
+        'play_time': 0, # Seconds
+        'overall_score': 0,
+        'overall_lines': 0,
+        'max_score': 0,
+        'max_lines': 0,
+        'max_level': 0
+    }
 
     def __init__(self):
         self.clock = pygame.time.Clock()
@@ -36,6 +47,7 @@ class Game:
         self.normal_font = utils.load_font('coolvetica.ttf', 18)
         self.big_font = utils.load_font('coolvetica.ttf', 30)
 
+        self._load_stats()
         self._start_new_game()
 
     def _start_new_game(self):
@@ -58,9 +70,13 @@ class Game:
         """Starts othe Tetrimino's falling."""
         pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_INITIAL_FALLING_INTERVAL - self.level * settings.FALLING_INTERVAL_DECREASE_STEP)
 
+        self.started_playing_at = int(time.time())
+
     def _disable_falling_interval(self):
         """Stops the Tetrimino's falling."""
         pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, 0)
+
+        self._update_play_time()
 
     def _set_current_tetrimino(self):
         """Sets the current falling Tetrimino along the next Tetrimino."""
@@ -79,6 +95,9 @@ class Game:
             self.is_game_over = True
 
             logging.info('Game over')
+
+            self._update_game_stats()
+            self._save_stats()
 
     def _get_random_tetrimino(self):
         """Get a random reference to a Tetrimino class."""
@@ -105,10 +124,14 @@ class Game:
             self.show_stats = False
 
             self._toggle_pause(False)
+
+            logging.info('Showing stats')
         elif not self.show_stats or force is True:
             self.show_stats = True
 
             self._toggle_pause(True)
+
+            logging.info('Hiding stats')
 
     def _load_game(self):
         """Load a saved game."""
@@ -145,6 +168,46 @@ class Game:
 
         with open(settings.SAVE_FILE_NAME, 'wb') as f:
             pickle.dump(data, f)
+
+    def _load_stats(self):
+        """Save the current stats to a JSON file."""
+        if not os.path.isfile(settings.STATS_FILE_NAME):
+            logging.info('Stats file does not exists')
+            return
+
+        logging.info('Loading stats')
+
+        with open(settings.STATS_FILE_NAME, 'r', encoding='utf-8') as f:
+            self.stats.update(json.load(f))
+
+    def _save_stats(self):
+        """Load stats from a JSON file."""
+        logging.info('Saving stats')
+
+        with open(settings.STATS_FILE_NAME, 'w', encoding='utf-8') as f:
+            json.dump(self.stats, f)
+
+    def _update_play_time(self):
+        if self.started_playing_at:
+            self.stats['play_time'] += int(time.time()) - self.started_playing_at
+
+            self.started_playing_at = None
+
+    def _update_game_stats(self):
+        """Update the stats data after the game is over."""
+        if self.score > self.stats['max_score']:
+            self.stats['max_score'] = self.score
+
+        if self.lines > self.stats['max_lines']:
+            self.stats['max_lines'] = self.lines
+
+        if self.level > self.stats['max_level']:
+            self.stats['max_level'] = self.level
+
+        self.stats['overall_score'] += self.score
+        self.stats['overall_lines'] += self.lines
+
+        self._update_play_time()
 
     def _process_lines(self):
         """For each completed lines: remove them and make everything to fall."""
@@ -236,6 +299,8 @@ class Game:
         """Called when the game must be closed."""
         if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self._save_game()
+            self._update_play_time()
+            self._save_stats()
             pygame.quit()
             sys.exit()
 
