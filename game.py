@@ -49,6 +49,7 @@ class Game:
 
         self.is_paused = False
         self.is_game_over = False
+        self.show_stats = False
 
         self._set_current_tetrimino()
         self._enable_or_update_falling_interval()
@@ -83,21 +84,31 @@ class Game:
         """Get a random reference to a Tetrimino class."""
         return getattr(tetriminos, random.choice(tetriminos.__all__))
 
-    def _toggle_pause(self):
+    def _toggle_pause(self, force=None):
         """Toggle pause on/off."""
-        if self.is_game_over:
+        if self.is_game_over or self.show_stats:
             return
 
-        if self.is_paused:
+        if self.is_paused or force is False:
             self._enable_or_update_falling_interval()
             self.is_paused = False
 
             logging.info('Game unpaused')
-        else:
+        elif not self.is_paused or force is True:
             self._disable_falling_interval()
             self.is_paused = True
 
             logging.info('Game paused')
+
+    def _toggle_stats(self, force=None):
+        if self.show_stats or force is False:
+            self.show_stats = False
+
+            self._toggle_pause(False)
+        elif not self.show_stats or force is True:
+            self.show_stats = True
+
+            self._toggle_pause(True)
 
     def _load_game(self):
         """Load a saved game."""
@@ -116,8 +127,9 @@ class Game:
 
         self.is_paused = False
         self.is_game_over = False
+        self.show_stats = False
 
-        self._enable_or_update_falling_interval()
+        self._toggle_pause(True)
 
     def _save_game(self):
         """Save the current game."""
@@ -208,6 +220,7 @@ class Game:
 
         self._draw_blocks(self.fallen_blocks)
         self._draw_info_panel()
+        self._draw_stats_screen()
         self._draw_pause_screen()
         self._draw_game_over_screen()
 
@@ -249,7 +262,7 @@ class Game:
         elif event.key == pygame.K_F2:
             self._load_game()
         elif event.key == pygame.K_F3:
-            pass # TODO Stats screen
+            self._toggle_stats()
         elif event.key == pygame.K_LEFT:
             self.current_tetrimino.move_left(self.fallen_blocks)
         elif event.key == pygame.K_RIGHT:
@@ -261,14 +274,6 @@ class Game:
 
     # --------------------------------------------------------------------------
     # Drawing handlers
-
-    def _draw_grid_line(self, pos, size):
-        """Draw a grid line."""
-        pygame.draw.rect(
-            self.window,
-            settings.GRID_COLOR,
-            pygame.Rect(pos, size)
-        )
 
     def _draw_playground(self):
         """Draw the playground."""
@@ -285,15 +290,23 @@ class Game:
         # The playground grid (if it should be rendered)
         if settings.DRAW_GRID:
             for x in range(0, settings.COLS + 1):
-                self._draw_grid_line(
-                    (x * settings.BLOCKS_SIDE_SIZE + (x - 1) * settings.GRID_SPACING, 0),
-                    (settings.GRID_SPACING, settings.PLAYGROUND_HEIGHT)
+                pygame.draw.rect(
+                    self.window,
+                    settings.GRID_COLOR,
+                    pygame.Rect(
+                        (x * settings.BLOCKS_SIDE_SIZE + (x - 1) * settings.GRID_SPACING, 0),
+                        (settings.GRID_SPACING, settings.PLAYGROUND_HEIGHT)
+                    )
                 )
 
             for y in range(0, settings.ROWS + 1):
-                self._draw_grid_line(
-                    (0, y * settings.BLOCKS_SIDE_SIZE + (y - 1) * settings.GRID_SPACING),
-                    (settings.PLAYGROUND_WIDTH, settings.GRID_SPACING)
+                pygame.draw.rect(
+                    self.window,
+                    settings.GRID_COLOR,
+                    pygame.Rect(
+                        (0, y * settings.BLOCKS_SIDE_SIZE + (y - 1) * settings.GRID_SPACING),
+                        (settings.PLAYGROUND_WIDTH, settings.GRID_SPACING)
+                    )
                 )
 
     def _draw_blocks(self, blocks):
@@ -305,7 +318,7 @@ class Game:
             self.window.blit(block.image, block.rect)
 
     def _draw_next_tetrimino(self, x, y):
-        """Draw the next Tetrimino in the info panel."""
+        """Draws the next Tetrimino in the info panel."""
         for pat_y, y_val in enumerate(self.next_tetrimino.pattern):
             for pat_x, x_val in enumerate(self.next_tetrimino.pattern[pat_y]):
                 if self.next_tetrimino.pattern[pat_y][pat_x] == 1:
@@ -317,8 +330,7 @@ class Game:
                     self.window.blit(block.image, block.rect)
 
     def _draw_info_panel(self):
-        """Draw the information panel."""
-        # Next Tetrimino
+        """Draws the information panel."""
         next_tetrimino_label = self.normal_font.render('Next', True, settings.TEXT_COLOR)
         next_tetrimino_label_rect = next_tetrimino_label.get_rect()
         next_tetrimino_label_rect.left = settings.PLAYGROUND_WIDTH + 20
@@ -328,60 +340,44 @@ class Game:
 
         self._draw_next_tetrimino(settings.PLAYGROUND_WIDTH + 20, next_tetrimino_label_rect.bottom + 10)
 
-        # Level label
-        level_label = self.normal_font.render('Level', True, settings.TEXT_COLOR)
-        level_label_rect = level_label.get_rect()
-        level_label_rect.left = settings.PLAYGROUND_WIDTH + 20
-        level_label_rect.top = next_tetrimino_label_rect.bottom + 110
+        infos = [
+            {
+                'name': 'Level',
+                'value': self.level
+            },
+            {
+                'name': 'Lines',
+                'value': self.lines
+            },
+            {
+                'name': 'Score',
+                'value': self.score
+            }
+        ]
 
-        self.window.blit(level_label, level_label_rect)
+        spacing = next_tetrimino_label_rect.bottom + 110
 
-        # Level value
-        level_value = self.normal_font.render(str(self.level), True, settings.TEXT_COLOR)
-        level_value_rect = level_value.get_rect()
-        level_value_rect.right = self.window_rect.w - 20
-        level_value_rect.top = next_tetrimino_label_rect.bottom + 110
+        for info in infos:
+            # Label
+            level_label = self.normal_font.render(info['name'], True, settings.TEXT_COLOR)
+            level_label_rect = level_label.get_rect()
+            level_label_rect.left = settings.PLAYGROUND_WIDTH + 20
+            level_label_rect.top = spacing
 
-        self.window.blit(level_value, level_value_rect)
+            self.window.blit(level_label, level_label_rect)
 
-        # Lines label
-        lines_label = self.normal_font.render('Lines', True, settings.TEXT_COLOR)
-        lines_label_rect = lines_label.get_rect()
-        lines_label_rect.left = settings.PLAYGROUND_WIDTH + 20
-        lines_label_rect.top = level_label_rect.bottom + 15
+            # Value
+            level_value = self.normal_font.render(str(info['value']), True, settings.TEXT_COLOR)
+            level_value_rect = level_value.get_rect()
+            level_value_rect.right = self.window_rect.w - 20
+            level_value_rect.top = spacing
 
-        self.window.blit(lines_label, lines_label_rect)
+            self.window.blit(level_value, level_value_rect)
 
-        # Lines value
-        lines_value = self.normal_font.render(str(self.lines), True, settings.TEXT_COLOR)
-        lines_value_rect = lines_value.get_rect()
-        lines_value_rect.right = self.window_rect.w - 20
-        lines_value_rect.top = level_label_rect.bottom + 15
+            spacing += 35
 
-        self.window.blit(lines_value, lines_value_rect)
-
-        # Score label
-        score_label = self.normal_font.render('Score', True, settings.TEXT_COLOR)
-        score_label_rect = score_label.get_rect()
-        score_label_rect.left = settings.PLAYGROUND_WIDTH + 20
-        score_label_rect.top = lines_value_rect.bottom + 15
-
-        self.window.blit(score_label, score_label_rect)
-
-        # Score value
-        score_value = self.normal_font.render(str(self.score), True, settings.TEXT_COLOR)
-        score_value_rect = score_value.get_rect()
-        score_value_rect.right = self.window_rect.w - 20
-        score_value_rect.top = lines_value_rect.bottom + 15
-
-        self.window.blit(score_value, score_value_rect)
-
-    def _draw_fullscreen_window(self, title, text):
-        """Draw a title and a text in the middle of the screen."""
-        if isinstance(text, str):
-            text = [text]
-
-        # Transparent rect that takes the whole window
+    def _draw_fullscreen_transparent_background(self):
+        """Draws a transparent rect that takes the whole window."""
         rect = pygame.Surface(self.window_rect.size)
         rect.set_alpha(200)
         rect.fill(settings.WINDOW_BACKGROUND_COLOR)
@@ -393,6 +389,13 @@ class Game:
                 self.window_rect.size
             )
         )
+
+    def _draw_fullscreen_window(self, title, text):
+        """Draws a title and a text in the middle of the screen."""
+        if isinstance(text, str):
+            text = [text]
+
+        self._draw_fullscreen_transparent_background()
 
         # Title
         title_label = self.big_font.render(title, True, settings.TEXT_COLOR)
@@ -416,13 +419,13 @@ class Game:
             spacing += 20
 
     def _draw_pause_screen(self):
-        """Drawn the Pause screen."""
-        if self.is_paused:
+        """Draws the Pause screen."""
+        if self.is_paused and not self.show_stats:
             self._draw_fullscreen_window('Pause', 'Press "Pause" again to continue.')
 
     def _draw_game_over_screen(self):
-        """Drawn the Game over screen."""
-        if self.is_game_over:
+        """Draws the Game over screen."""
+        if self.is_game_over and not self.show_stats:
             recap_string = [
                 'You completed {} lines, which gained you'.format(self.lines),
                 'to the level {} with a score of {}.'.format(self.level, self.score),
@@ -430,3 +433,18 @@ class Game:
             ]
 
             self._draw_fullscreen_window('Game over!', recap_string)
+
+    def _draw_stats_screen(self):
+        """Draws the Stats screen."""
+        if self.show_stats:
+            self._draw_fullscreen_transparent_background()
+
+            # Title
+            title_label = self.big_font.render('Statistics', True, settings.TEXT_COLOR)
+            title_label_rect = title_label.get_rect()
+            title_label_rect.centerx = self.window_rect.centerx
+            title_label_rect.top = 20
+
+            self.window.blit(title_label, title_label_rect)
+
+            # TODO
