@@ -1,15 +1,25 @@
-from modules.saves_manager import SavesManager
 import tetriminos
 import settings
 import logging
 import random
 import pygame
+import pickle
 import utils
 import math
 import sys
+import os
 
 
 class Game:
+    save_data = [
+        'fallen_blocks',
+        'level',
+        'lines',
+        'score',
+        'current_tetrimino',
+        'next_tetrimino'
+    ]
+
     def __init__(self):
         self.clock = pygame.time.Clock()
         self.window = pygame.display.set_mode(settings.WINDOW_SIZE, pygame.DOUBLEBUF)
@@ -25,10 +35,6 @@ class Game:
 
         self.normal_font = utils.load_font('coolvetica.ttf', 18)
         self.big_font = utils.load_font('coolvetica.ttf', 30)
-
-        logging.info('Loading modules')
-
-        self.saves_manager = SavesManager(self)
 
         self._start_new_game()
 
@@ -92,6 +98,41 @@ class Game:
             self.is_paused = True
 
             logging.info('Game paused')
+
+    def _load_game(self):
+        """Load a saved game."""
+        if not os.path.isfile(settings.SAVE_FILE_NAME):
+            logging.info('Save file does not exists')
+            return
+
+        logging.info('Loading saved game')
+
+        with open(settings.SAVE_FILE_NAME, 'rb') as f:
+            data = pickle.load(f)
+
+        for sd in self.save_data:
+            if sd in data:
+                setattr(self, sd, data[sd])
+
+        self.is_paused = False
+        self.is_game_over = False
+
+        self._enable_or_update_falling_interval()
+
+    def _save_game(self):
+        """Save the current game."""
+        if self.is_game_over:
+            return
+
+        logging.info('Saving current game')
+
+        data = {}
+
+        for sd in self.save_data:
+            data[sd] = getattr(self, sd)
+
+        with open(settings.SAVE_FILE_NAME, 'wb') as f:
+            pickle.dump(data, f)
 
     def _process_lines(self):
         """For each completed lines: remove them and make everything to fall."""
@@ -181,7 +222,7 @@ class Game:
     def _event_quit(self, event):
         """Called when the game must be closed."""
         if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            self.saves_manager.save_game()
+            self._save_game()
             pygame.quit()
             sys.exit()
 
@@ -206,7 +247,7 @@ class Game:
         elif event.key == pygame.K_F1:
             self._start_new_game()
         elif event.key == pygame.K_F2:
-            self.saves_manager.load_game()
+            self._load_game()
         elif event.key == pygame.K_F3:
             pass # TODO Stats screen
         elif event.key == pygame.K_LEFT:
