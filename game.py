@@ -119,28 +119,28 @@ class Game:
         if self.is_game_over or self.show_stats:
             return
 
-        if self.is_paused or force is False:
+        if force is False or self.is_paused:
             self._enable_or_update_falling_interval()
             self.is_paused = False
 
             logging.info('Game unpaused')
-        elif not self.is_paused or force is True:
+        elif force is True or not self.is_paused:
             self._disable_falling_interval()
             self.is_paused = True
 
             logging.info('Game paused')
 
     def _toggle_stats(self, force=None):
-        if self.show_stats or force is False:
+        if force is False or self.show_stats:
             self.show_stats = False
 
             self._toggle_pause(False)
 
             logging.info('Hiding stats')
-        elif not self.show_stats or force is True:
-            self.show_stats = True
-
+        elif force is True or not self.show_stats:
             self._toggle_pause(True)
+
+            self.show_stats = True
 
             logging.info('Showing stats')
 
