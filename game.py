@@ -29,13 +29,13 @@ class Game:
     ]
 
     stats = {
-        'play_time': 0, # Seconds
-        'overall_score': 0,
-        'overall_lines': 0,
-        'max_score': 0,
-        'max_lines': 0,
-        'max_level': 0,
-        'games_played': 0
+        'play_time': {'name': 'Play time', 'value': 0},
+        'overall_score': {'name': 'Overall score', 'value': 0},
+        'overall_lines': {'name': 'Overall lines', 'value': 0},
+        'max_score': {'name': 'Maximum reached score', 'value': 0},
+        'max_lines': {'name': 'Maximum reached lines', 'value': 0},
+        'max_level': {'name': 'Maximum reached level', 'value': 0},
+        'games_played': {'name': 'Total games played', 'value': 0}
     }
 
     def __init__(self):
@@ -132,13 +132,13 @@ class Game:
 
             self._toggle_pause(False)
 
-            logging.info('Showing stats')
+            logging.info('Hiding stats')
         elif not self.show_stats or force is True:
             self.show_stats = True
 
             self._toggle_pause(True)
 
-            logging.info('Hiding stats')
+            logging.info('Showing stats')
 
     def _load_game(self):
         """Load a saved game."""
@@ -185,37 +185,45 @@ class Game:
         logging.info('Loading stats')
 
         with open(settings.STATS_FILE_NAME, 'r', encoding='utf-8') as f:
-            self.stats.update(json.load(f))
+            data = json.load(f)
+
+            for key, value in data.items():
+                self.stats[key]['value'] = value
 
     def _save_stats(self):
         """Load stats from a JSON file."""
         logging.info('Saving stats')
 
+        data = {}
+
+        for key, stat in self.stats.items():
+            data[key] = stat['value']
+
         with open(settings.STATS_FILE_NAME, 'w', encoding='utf-8') as f:
-            json.dump(self.stats, f)
+            json.dump(data, f)
 
     def _update_play_time(self):
         """Update the play time in the stats."""
         if self.started_playing_at:
-            self.stats['play_time'] += int(time.time()) - self.started_playing_at
+            self.stats['play_time']['value'] += int(time.time()) - self.started_playing_at
 
             self.started_playing_at = None
 
     def _update_game_stats(self):
         """Update the stats data after the game is over."""
-        if self.score > self.stats['max_score']:
-            self.stats['max_score'] = self.score
+        if self.score > self.stats['max_score']['value']:
+            self.stats['max_score']['value'] = self.score
 
-        if self.lines > self.stats['max_lines']:
-            self.stats['max_lines'] = self.lines
+        if self.lines > self.stats['max_lines']['value']:
+            self.stats['max_lines']['value'] = self.lines
 
-        if self.level > self.stats['max_level']:
-            self.stats['max_level'] = self.level
+        if self.level > self.stats['max_level']['value']:
+            self.stats['max_level']['value'] = self.level
 
-        self.stats['overall_score'] += self.score
-        self.stats['overall_lines'] += self.lines
+        self.stats['overall_score']['value'] += self.score
+        self.stats['overall_lines']['value'] += self.lines
 
-        self.stats['games_played'] += 1
+        self.stats['games_played']['value'] += 1
 
         self._update_play_time()
 
@@ -419,20 +427,20 @@ class Game:
 
         for info in self.infos:
             # Label
-            level_label = self.normal_font.render(info['name'], True, settings.TEXT_COLOR)
-            level_label_rect = level_label.get_rect()
-            level_label_rect.left = settings.PLAYGROUND_WIDTH + 20
-            level_label_rect.top = spacing
+            label = self.normal_font.render(info['name'], True, settings.TEXT_COLOR)
+            label_rect = label.get_rect()
+            label_rect.left = settings.PLAYGROUND_WIDTH + 20
+            label_rect.top = spacing
 
-            self.window.blit(level_label, level_label_rect)
+            self.window.blit(label, label_rect)
 
             # Value
-            level_value = self.normal_font.render(str(getattr(self, info['value'])), True, settings.TEXT_COLOR)
-            level_value_rect = level_value.get_rect()
-            level_value_rect.right = self.window_rect.w - 20
-            level_value_rect.top = spacing
+            value = self.normal_font.render(str(getattr(self, info['value'])), True, settings.TEXT_COLOR)
+            value_rect = value.get_rect()
+            value_rect.right = self.window_rect.w - 20
+            value_rect.top = spacing
 
-            self.window.blit(level_value, level_value_rect)
+            self.window.blit(value, value_rect)
 
             spacing += 35
 
@@ -507,4 +515,24 @@ class Game:
 
             self.window.blit(title_label, title_label_rect)
 
-            # TODO
+            # The stats themselves
+            spacing = title_label_rect.bottom + 30
+
+            for key, stat in self.stats.items():
+                # Stat label
+                stat_label = self.normal_font.render(stat['name'], True, settings.TEXT_COLOR)
+                stat_label_rect = stat_label.get_rect()
+                stat_label_rect.left = 40
+                stat_label_rect.top = spacing
+
+                self.window.blit(stat_label, stat_label_rect)
+
+                # Stat value
+                stat_value = self.normal_font.render(str(stat['value']), True, settings.TEXT_COLOR)
+                stat_value_rect = stat_value.get_rect()
+                stat_value_rect.right = self.window_rect.w - 40
+                stat_value_rect.top = spacing
+
+                self.window.blit(stat_value, stat_value_rect)
+
+                spacing += 35
