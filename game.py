@@ -22,6 +22,12 @@ class Game:
         'next_tetrimino'
     ]
 
+    infos = [
+        {'name': 'Level', 'value': 'level'},
+        {'name': 'Lines', 'value': 'lines'},
+        {'name': 'Score', 'value': 'score'}
+    ]
+
     stats = {
         'play_time': 0, # Seconds
         'overall_score': 0,
@@ -409,24 +415,9 @@ class Game:
 
         self._draw_next_tetrimino(settings.PLAYGROUND_WIDTH + 20, next_tetrimino_label_rect.bottom + 10)
 
-        infos = [
-            {
-                'name': 'Level',
-                'value': self.level
-            },
-            {
-                'name': 'Lines',
-                'value': self.lines
-            },
-            {
-                'name': 'Score',
-                'value': self.score
-            }
-        ]
-
         spacing = next_tetrimino_label_rect.bottom + 110
 
-        for info in infos:
+        for info in self.infos:
             # Label
             level_label = self.normal_font.render(info['name'], True, settings.TEXT_COLOR)
             level_label_rect = level_label.get_rect()
@@ -436,7 +427,7 @@ class Game:
             self.window.blit(level_label, level_label_rect)
 
             # Value
-            level_value = self.normal_font.render(str(info['value']), True, settings.TEXT_COLOR)
+            level_value = self.normal_font.render(str(getattr(self, info['value'])), True, settings.TEXT_COLOR)
             level_value_rect = level_value.get_rect()
             level_value_rect.right = self.window_rect.w - 20
             level_value_rect.top = spacing
