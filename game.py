@@ -1,10 +1,10 @@
 import tetriminos
 import settings
 import logging
+import helpers
 import random
 import pygame
 import pickle
-import utils
 import json
 import time
 import math
@@ -44,15 +44,15 @@ class Game:
         self.window_rect = self.window.get_rect()
 
         pygame.display.set_caption('Tetris')
-        pygame.display.set_icon(utils.load_image('icon.png'))
+        pygame.display.set_icon(helpers.load_image('icon.png'))
 
         self.current_tetrimino = None
         self.next_tetrimino = None
 
         logging.info('Loading fonts')
 
-        self.normal_font = utils.load_font('coolvetica.ttf', 18)
-        self.big_font = utils.load_font('coolvetica.ttf', 30)
+        self.normal_font = helpers.load_font('coolvetica.ttf', 18)
+        self.big_font = helpers.load_font('coolvetica.ttf', 30)
 
         self._load_stats()
         self._start_new_game()
@@ -427,20 +427,23 @@ class Game:
 
         for info in self.infos:
             # Label
-            label = self.normal_font.render(info['name'], True, settings.TEXT_COLOR)
-            label_rect = label.get_rect()
-            label_rect.left = settings.PLAYGROUND_WIDTH + 20
-            label_rect.top = spacing
+            info_label = self.normal_font.render(info['name'], True, settings.TEXT_COLOR)
+            info_label_rect = info_label.get_rect()
+            info_label_rect.left = settings.PLAYGROUND_WIDTH + 20
+            info_label_rect.top = spacing
 
-            self.window.blit(label, label_rect)
+            self.window.blit(info_label, info_label_rect)
 
             # Value
-            value = self.normal_font.render(str(getattr(self, info['value'])), True, settings.TEXT_COLOR)
-            value_rect = value.get_rect()
-            value_rect.right = self.window_rect.w - 20
-            value_rect.top = spacing
+            value = getattr(self, info['value'])
+            value_format = info['format'] if 'format' in info else str
 
-            self.window.blit(value, value_rect)
+            info_value = self.normal_font.render(value_format(value), True, settings.TEXT_COLOR)
+            info_value_rect = info_value.get_rect()
+            info_value_rect.right = self.window_rect.w - 20
+            info_value_rect.top = spacing
+
+            self.window.blit(info_value, info_value_rect)
 
             spacing += 35
 
@@ -528,7 +531,9 @@ class Game:
                 self.window.blit(stat_label, stat_label_rect)
 
                 # Stat value
-                stat_value = self.normal_font.render(str(stat['value']), True, settings.TEXT_COLOR)
+                stat_value_format = stat['format'] if 'format' in stat else str
+
+                stat_value = self.normal_font.render(stat_value_format(stat['value']), True, settings.TEXT_COLOR)
                 stat_value_rect = stat_value.get_rect()
                 stat_value_rect.right = self.window_rect.w - 40
                 stat_value_rect.top = spacing
