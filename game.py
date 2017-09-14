@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import tetriminos
 import settings
 import logging
@@ -23,20 +24,20 @@ class Game:
     ]
 
     infos = [
-        {'name': 'Level', 'value': 'level'},
-        {'name': 'Lines', 'value': 'lines'},
-        {'name': 'Score', 'value': 'score'}
+        {'name': 'Level', 'value': 'level', 'format': helpers.humanize_integer},
+        {'name': 'Lines', 'value': 'lines', 'format': helpers.humanize_integer},
+        {'name': 'Score', 'value': 'score', 'format': helpers.humanize_integer}
     ]
 
-    stats = {
-        'play_time': {'name': 'Play time', 'value': 0},
-        'overall_score': {'name': 'Overall score', 'value': 0},
-        'overall_lines': {'name': 'Overall lines', 'value': 0},
-        'max_score': {'name': 'Maximum reached score', 'value': 0},
-        'max_lines': {'name': 'Maximum reached lines', 'value': 0},
-        'max_level': {'name': 'Maximum reached level', 'value': 0},
-        'games_played': {'name': 'Total games played', 'value': 0}
-    }
+    stats = OrderedDict([
+        ('play_time', {'name': 'Play time', 'value': 0, 'format': helpers.humanize_seconds}),
+        ('games_played', {'name': 'Total games played', 'value': 0, 'format': helpers.humanize_integer}),
+        ('overall_score', {'name': 'Overall score', 'value': 0, 'format': helpers.humanize_integer}),
+        ('overall_lines', {'name': 'Overall lines', 'value': 0, 'format': helpers.humanize_integer}),
+        ('max_score', {'name': 'Maximum reached score', 'value': 0, 'format': helpers.humanize_integer}),
+        ('max_lines', {'name': 'Maximum reached lines', 'value': 0, 'format': helpers.humanize_integer}),
+        ('max_level', {'name': 'Maximum reached level', 'value': 0})
+    ])
 
     def __init__(self):
         self.clock = pygame.time.Clock()
@@ -48,6 +49,7 @@ class Game:
 
         self.current_tetrimino = None
         self.next_tetrimino = None
+        self.started_playing_at = None
 
         logging.info('Loading fonts')
 
@@ -60,6 +62,8 @@ class Game:
     def _start_new_game(self):
         """Start a new game."""
         logging.info('Initializing new game')
+
+        self._update_play_time()
 
         self.fallen_blocks = []
         self.level = 1
@@ -450,7 +454,7 @@ class Game:
     def _draw_fullscreen_transparent_background(self):
         """Draws a transparent rect that takes the whole window."""
         rect = pygame.Surface(self.window_rect.size)
-        rect.set_alpha(200)
+        rect.set_alpha(230)
         rect.fill(settings.WINDOW_BACKGROUND_COLOR)
 
         self.window.blit(

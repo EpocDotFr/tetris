@@ -58,3 +58,17 @@ def load_font(filename, size):
     path = _get_resource_path('fonts', filename)
 
     return pygame.font.Font(path, size)
+
+
+def humanize_seconds(seconds):
+    """Return a human-readable representation of the given number of seconds."""
+    h = int(seconds / (60 * 60))
+    m = int((seconds % (60 * 60)) / 60)
+    s = int(seconds % 60)
+
+    return '{}h {:>02}m {:>02}s'.format(h, m, s)
+
+
+def humanize_integer(integer):
+    """Return a slightly more human-readable representation of the given integer."""
+    return format(integer, ',d').replace(',', ' ')
