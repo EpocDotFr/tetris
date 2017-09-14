@@ -34,9 +34,9 @@ class Game:
         ('games_played', {'name': 'Total games played', 'value': 0, 'format': helpers.humanize_integer}),
         ('overall_score', {'name': 'Overall score', 'value': 0, 'format': helpers.humanize_integer}),
         ('overall_lines', {'name': 'Overall lines', 'value': 0, 'format': helpers.humanize_integer}),
-        ('max_score', {'name': 'Maximum reached score', 'value': 0, 'format': helpers.humanize_integer}),
-        ('max_lines', {'name': 'Maximum reached lines', 'value': 0, 'format': helpers.humanize_integer}),
-        ('max_level', {'name': 'Maximum reached level', 'value': 0})
+        ('max_score', {'name': 'Maximum score', 'value': 0, 'format': helpers.humanize_integer}),
+        ('max_lines', {'name': 'Maximum lines', 'value': 0, 'format': helpers.humanize_integer}),
+        ('max_level', {'name': 'Maximum level', 'value': 0})
     ])
 
     def __init__(self):
