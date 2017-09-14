@@ -28,7 +28,8 @@ class Game:
         'overall_lines': 0,
         'max_score': 0,
         'max_lines': 0,
-        'max_level': 0
+        'max_level': 0,
+        'games_played': 0
     }
 
     def __init__(self):
@@ -188,6 +189,7 @@ class Game:
             json.dump(self.stats, f)
 
     def _update_play_time(self):
+        """Update the play time in the stats."""
         if self.started_playing_at:
             self.stats['play_time'] += int(time.time()) - self.started_playing_at
 
@@ -206,6 +208,8 @@ class Game:
 
         self.stats['overall_score'] += self.score
         self.stats['overall_lines'] += self.lines
+
+        self.stats['games_played'] += 1
 
         self._update_play_time()
 
