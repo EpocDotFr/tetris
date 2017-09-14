@@ -77,9 +77,12 @@ class Game:
         self._set_current_tetrimino()
         self._enable_or_update_falling_interval()
 
-    def _enable_or_update_falling_interval(self):
+    def _enable_or_update_falling_interval(self, force=None):
         """Starts othe Tetrimino's falling."""
-        pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_INITIAL_FALLING_INTERVAL - self.level * settings.FALLING_INTERVAL_DECREASE_STEP)
+        if force:
+            pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, force)
+        else:
+            pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_INITIAL_FALLING_INTERVAL - self.level * settings.TETRIMINOS_FALLING_INTERVAL_DECREASE_STEP)
 
         self.started_playing_at = int(time.time())
 
@@ -277,7 +280,7 @@ class Game:
         self.score += score_to_add
         self.lines += completed_lines_count
 
-        new_level = len(list(range(0, self.lines, settings.LEVEL_INCREASE_STEP)))
+        new_level = len(list(range(0, self.lines, settings.LEVEL_INCREASE_LINES_STEP)))
 
         # Did we reached a new level of difficulty?
         if self.level != new_level:
@@ -339,25 +342,26 @@ class Game:
 
     def _event_game_key(self, event):
         """Handle the game keys."""
-        if event.type != pygame.KEYDOWN:
-            return
-
-        if event.key == pygame.K_PAUSE:
-            self._toggle_pause()
-        elif event.key == pygame.K_F1:
-            self._start_new_game()
-        elif event.key == pygame.K_F2:
-            self._load_game()
-        elif event.key == pygame.K_F3:
-            self._toggle_stats()
-        elif event.key == pygame.K_LEFT:
-            self.current_tetrimino.move_left(self.fallen_blocks)
-        elif event.key == pygame.K_RIGHT:
-            self.current_tetrimino.move_right(self.fallen_blocks)
-        elif event.key == pygame.K_DOWN:
-            pass # TODO Make the Tetrimino to fall faster
-        elif event.key == pygame.K_UP:
-            self.current_tetrimino.rotate()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_PAUSE:
+                self._toggle_pause()
+            elif event.key == pygame.K_F1:
+                self._start_new_game()
+            elif event.key == pygame.K_F2:
+                self._load_game()
+            elif event.key == pygame.K_F3:
+                self._toggle_stats()
+            elif event.key == pygame.K_LEFT:
+                self.current_tetrimino.move_left(self.fallen_blocks)
+            elif event.key == pygame.K_RIGHT:
+                self.current_tetrimino.move_right(self.fallen_blocks)
+            elif event.key == pygame.K_DOWN:
+                self._enable_or_update_falling_interval(settings.TETRIMINOS_FAST_FALLING_INTERVAL)
+            elif event.key == pygame.K_UP:
+                self.current_tetrimino.rotate()
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_DOWN:
+                self._enable_or_update_falling_interval()
 
     # --------------------------------------------------------------------------
     # Drawing handlers
