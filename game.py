@@ -74,6 +74,8 @@ class Game:
         self.is_game_over = False
         self.show_stats = False
 
+        self.started_playing_at = int(time.time())
+
         self._set_current_tetrimino()
         self._enable_or_update_falling_interval()
 
@@ -84,13 +86,9 @@ class Game:
         else:
             pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_INITIAL_FALLING_INTERVAL - self.level * settings.TETRIMINOS_FALLING_INTERVAL_DECREASE_STEP)
 
-        self.started_playing_at = int(time.time())
-
     def _disable_falling_interval(self):
         """Stops the Tetrimino's falling."""
         pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, 0)
-
-        self._update_play_time()
 
     def _set_current_tetrimino(self):
         """Sets the current falling Tetrimino along the next Tetrimino."""
@@ -107,6 +105,7 @@ class Game:
         if self.current_tetrimino.will_collide(self.fallen_blocks):
             self._disable_falling_interval()
             self.is_game_over = True
+            self._update_play_time()
 
             logging.info('Game over')
 
@@ -125,11 +124,13 @@ class Game:
         if force is False or self.is_paused:
             self._enable_or_update_falling_interval()
             self.is_paused = False
+            self.started_playing_at = int(time.time())
 
             logging.info('Game unpaused')
         elif force is True or not self.is_paused:
             self._disable_falling_interval()
             self.is_paused = True
+            self._update_play_time()
 
             logging.info('Game paused')
 
