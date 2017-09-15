@@ -249,10 +249,8 @@ class Game:
         # For each completed lines, remove each block in them
         for y, total in completed_lines.copy().items():
             if total == settings.COLS:
-                for block in self.fallen_blocks: # TODO For an unknown reason, not all blocks are being removed
-                    if block.y != y:
-                        continue
-
+                # The list comprehension to prevent unexpected results when removing from self.fallen_blocks while looping on it
+                for block in [block for block in self.fallen_blocks if block.y == y]:
                     self.fallen_blocks.remove(block)
             else:
                 del completed_lines[y] # Remove uncompleted lines counts
