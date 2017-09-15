@@ -2,7 +2,9 @@
 
 The [Tetris](https://en.wikipedia.org/wiki/Tetris) game, implemented in Python.
 
-> TODO Screenshot
+<p align="center">
+  <img src="https://raw.githubusercontent.com/EpocDotFr/tetris/master/screenshot.png">
+</p>
 
 ## Features
 
