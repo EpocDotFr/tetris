@@ -50,7 +50,8 @@ This task is performed by the `build_*` scripts to be run in the corresponding O
 ### Scoring
 
 Each completed lines is worth 10 points. If you have completed 4 lines at once (also called a "tetris"), the score
-is multiplied by 2, so (4 lines x 10 points ) x 2 = 80 points.
+is doubled, so (4 lines x 10 points) x 2 = 80 points. If there's no more blocks on the playground once you have removed
+lines, the score is also doubled. Taking the previous example: 80 points x 2 = 160 points.
 
 ### Levels
 
