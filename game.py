@@ -8,7 +8,6 @@ import pygame
 import pickle
 import json
 import time
-import math
 import sys
 import os
 
@@ -92,12 +91,10 @@ class Game:
 
     def _set_current_tetrimino(self):
         """Sets the current falling Tetrimino along the next Tetrimino."""
-        x = math.floor((settings.COLS - 1) / 2)
-
         if not self.next_tetrimino:
-            self.current_tetrimino = self._get_random_tetrimino()(x, 0)
+            self.current_tetrimino = self._get_random_tetrimino()(settings.PLAYGROUND_CENTERX, 0)
         else:
-            self.current_tetrimino = self.next_tetrimino(x, 0)
+            self.current_tetrimino = self.next_tetrimino(settings.PLAYGROUND_CENTERX, 0)
 
         self.next_tetrimino = self._get_random_tetrimino()
 
@@ -363,7 +360,7 @@ class Game:
             elif event.key == pygame.K_DOWN:
                 self._enable_or_update_falling_interval(settings.TETRIMINOS_FAST_FALLING_INTERVAL)
             elif event.key == pygame.K_UP:
-                self.current_tetrimino.rotate()
+                self.current_tetrimino.rotate(self.fallen_blocks)
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_DOWN:
                 self._enable_or_update_falling_interval()

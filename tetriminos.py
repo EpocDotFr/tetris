@@ -80,9 +80,10 @@ class Block(pygame.sprite.Sprite):
 
 class Tetrimino:
     def __init__(self, x, y):
-        self.rows = len(self.pattern)
-        self.cols = len(self.pattern[0])
+        self._init(x, y)
 
+    def _init(self, x, y):
+        """Build the blocks of this Tetrimino."""
         self.blocks = []
 
         for pat_y, y_val in enumerate(self.pattern):
@@ -120,9 +121,35 @@ class Tetrimino:
 
         return True
 
-    def rotate(self):
-        """Rotates this Tetrimino by 90° counterclockwise."""
-        pass # TODO
+    def rotate(self, fallen_blocks):
+        """Rotates this Tetrimino by 90 degrees clockwise."""
+        # Get the position of the top-left-most block of this Tetrimino. This will be our reference position on the
+        # playground for all rotation operations
+        top_left_most_block_x = settings.COLS - 1
+        top_left_most_block_y = settings.ROWS - 1
+
+        for block in self.blocks:
+            if block.x < top_left_most_block_x and block.y < top_left_most_block_y:
+                top_left_most_block_x = block.x
+                top_left_most_block_y = block.y
+
+        # Rotate the pattern of this Tetrimino by 90 degress clockwise
+        new_pattern = list(zip(*self.pattern[::-1]))
+
+        # Check if the new position of all the blocks will collide with others or with the playground edges
+        for pat_y, y_val in enumerate(new_pattern):
+            for pat_x, x_val in enumerate(new_pattern[pat_y]):
+                if new_pattern[pat_y][pat_x] == 1:
+                    new_x = top_left_most_block_x + pat_x
+                    new_y = top_left_most_block_y + pat_y
+
+                    # Check if the new bloc is colliding with an already fallen one
+                    for fallen_block in fallen_blocks:
+                        if fallen_block.x == new_x and fallen_block.y == new_y:
+                            return # Abort the rotating operation if one block is colliding with an already fallen one
+
+        self.pattern = new_pattern # Erase the old pattern by the new one
+        self._init(top_left_most_block_x, top_left_most_block_y) # Erase the old blocks by the new ones
 
     def will_collide(self, fallen_blocks, direction=(0, 0)):
         """Check if this Tetrimino is about to collide with other blocks in the specified direction."""

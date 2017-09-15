@@ -1,6 +1,7 @@
 import pygame
-import os
+import math
 import sys
+import os
 
 # ----------------------------------------------------------------------
 # Editable settings
@@ -38,6 +39,7 @@ INFO_PANEL_WIDTH = 150
 
 PLAYGROUND_WIDTH = COLS * BLOCKS_SIDE_SIZE + (COLS - 1) * GRID_SPACING
 PLAYGROUND_HEIGHT = ROWS * BLOCKS_SIDE_SIZE + (ROWS - 1) * GRID_SPACING
+PLAYGROUND_CENTERX = math.floor((COLS - 1) / 2)
 
 WINDOW_SIZE = (
     PLAYGROUND_WIDTH + INFO_PANEL_WIDTH,
