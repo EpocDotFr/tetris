@@ -270,16 +270,21 @@ class Game:
 
         #         block.y += 1
 
-        # Compute and update the score as well as the lines count
+        # Compute and update the score
         score_to_add = completed_lines_count * settings.COMPLETED_LINE_SCORE
 
         # If four lines were completed at one time, it's a Tetris, so double the score
         if completed_lines_count == 4:
             score_to_add *= 2
 
+        # If the playground is empty after the Tetrimino has fallen: double the score
+        if not self.fallen_blocks:
+            score_to_add *= 2
+
         self.score += score_to_add
         self.lines += completed_lines_count
 
+        # Compute and update the new level (if applicable)
         new_level = len(list(range(0, self.lines, settings.LEVEL_INCREASE_LINES_STEP)))
 
         # Did we reached a new level of difficulty?
