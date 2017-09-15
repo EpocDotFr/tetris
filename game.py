@@ -115,16 +115,13 @@ class Game:
 
     def _toggle_pause(self, force=None):
         """Toggle pause on/off."""
-        if self.is_game_over or self.show_stats:
-            return
-
-        if force is False or self.is_paused:
+        if force is False or (force is None and self.is_paused):
             self._enable_or_update_falling_interval()
             self.is_paused = False
             self.started_playing_at = int(time.time())
 
             logging.info('Game unpaused')
-        elif force is True or not self.is_paused:
+        elif force is True or (force is None and not self.is_paused):
             self._disable_falling_interval()
             self.is_paused = True
             self._update_play_time()
@@ -132,13 +129,13 @@ class Game:
             logging.info('Game paused')
 
     def _toggle_stats(self, force=None):
-        if force is False or self.show_stats:
+        if force is False or (force is None and self.show_stats):
             self.show_stats = False
 
             self._toggle_pause(False)
 
             logging.info('Hiding stats')
-        elif force is True or not self.show_stats:
+        elif force is True or (force is None and not self.show_stats):
             self._toggle_pause(True)
 
             self.show_stats = True
@@ -310,9 +307,15 @@ class Game:
 
         self._draw_blocks(self.fallen_blocks)
         self._draw_info_panel()
-        self._draw_stats_screen()
-        self._draw_pause_screen()
-        self._draw_game_over_screen()
+
+        if self.show_stats:
+            self._draw_stats_screen()
+
+        if self.is_paused and not self.show_stats:
+            self._draw_pause_screen()
+
+        if self.is_game_over and not self.show_stats:
+            self._draw_game_over_screen()
 
         # PyGame-related updates
         pygame.display.update()
@@ -345,7 +348,7 @@ class Game:
     def _event_game_key(self, event):
         """Handle the game keys."""
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_PAUSE:
+            if event.key == pygame.K_PAUSE and not self.is_game_over and not self.show_stats:
                 self._toggle_pause()
             elif event.key == pygame.K_F1:
                 self._start_new_game()
@@ -353,16 +356,16 @@ class Game:
                 self._load_game()
             elif event.key == pygame.K_F3:
                 self._toggle_stats()
-            elif event.key == pygame.K_LEFT:
+            elif event.key == pygame.K_LEFT and not self.is_paused and not self.is_game_over:
                 self.current_tetrimino.move_left(self.fallen_blocks)
-            elif event.key == pygame.K_RIGHT:
+            elif event.key == pygame.K_RIGHT and not self.is_paused and not self.is_game_over:
                 self.current_tetrimino.move_right(self.fallen_blocks)
-            elif event.key == pygame.K_DOWN:
+            elif event.key == pygame.K_DOWN and not self.is_paused and not self.is_game_over:
                 self._enable_or_update_falling_interval(settings.TETRIMINOS_FAST_FALLING_INTERVAL)
-            elif event.key == pygame.K_UP:
+            elif event.key == pygame.K_UP and not self.is_paused and not self.is_game_over:
                 self.current_tetrimino.rotate(self.fallen_blocks)
         elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_DOWN:
+            if event.key == pygame.K_DOWN and not self.is_paused and not self.is_game_over:
                 self._enable_or_update_falling_interval()
 
     # --------------------------------------------------------------------------
@@ -501,53 +504,50 @@ class Game:
 
     def _draw_pause_screen(self):
         """Draws the Pause screen."""
-        if self.is_paused and not self.show_stats:
-            self._draw_fullscreen_window('Pause', 'Press "Pause" again to continue.')
+        self._draw_fullscreen_window('Pause', 'Press "Pause" again to continue.')
 
     def _draw_game_over_screen(self):
         """Draws the Game over screen."""
-        if self.is_game_over and not self.show_stats:
-            recap_string = [
-                'You completed {} lines, which gained you'.format(self.lines),
-                'to the level {} with a score of {}.'.format(self.level, self.score),
-                'Press "F1" to start a new game.'
-            ]
+        recap_string = [
+            'You completed {} lines, which gained you'.format(self.lines),
+            'to the level {} with a score of {}.'.format(self.level, self.score),
+            'Press "F1" to start a new game.'
+        ]
 
-            self._draw_fullscreen_window('Game over!', recap_string)
+        self._draw_fullscreen_window('Game over!', recap_string)
 
     def _draw_stats_screen(self):
         """Draws the Stats screen."""
-        if self.show_stats:
-            self._draw_fullscreen_transparent_background()
+        self._draw_fullscreen_transparent_background()
 
-            # Title
-            title_label = self.big_font.render('Statistics', True, settings.TEXT_COLOR)
-            title_label_rect = title_label.get_rect()
-            title_label_rect.centerx = self.window_rect.centerx
-            title_label_rect.top = 20
+        # Title
+        title_label = self.big_font.render('Statistics', True, settings.TEXT_COLOR)
+        title_label_rect = title_label.get_rect()
+        title_label_rect.centerx = self.window_rect.centerx
+        title_label_rect.top = 20
 
-            self.window.blit(title_label, title_label_rect)
+        self.window.blit(title_label, title_label_rect)
 
-            # The stats themselves
-            spacing = title_label_rect.bottom + 30
+        # The stats themselves
+        spacing = title_label_rect.bottom + 30
 
-            for key, stat in self.stats.items():
-                # Stat label
-                stat_label = self.normal_font.render(stat['name'], True, settings.TEXT_COLOR)
-                stat_label_rect = stat_label.get_rect()
-                stat_label_rect.left = 40
-                stat_label_rect.top = spacing
+        for key, stat in self.stats.items():
+            # Stat label
+            stat_label = self.normal_font.render(stat['name'], True, settings.TEXT_COLOR)
+            stat_label_rect = stat_label.get_rect()
+            stat_label_rect.left = 40
+            stat_label_rect.top = spacing
 
-                self.window.blit(stat_label, stat_label_rect)
+            self.window.blit(stat_label, stat_label_rect)
 
-                # Stat value
-                stat_value_format = stat['format'] if 'format' in stat else str
+            # Stat value
+            stat_value_format = stat['format'] if 'format' in stat else str
 
-                stat_value = self.normal_font.render(stat_value_format(stat['value']), True, settings.TEXT_COLOR)
-                stat_value_rect = stat_value.get_rect()
-                stat_value_rect.right = self.window_rect.w - 40
-                stat_value_rect.top = spacing
+            stat_value = self.normal_font.render(stat_value_format(stat['value']), True, settings.TEXT_COLOR)
+            stat_value_rect = stat_value.get_rect()
+            stat_value_rect.right = self.window_rect.w - 40
+            stat_value_rect.top = spacing
 
-                self.window.blit(stat_value, stat_value_rect)
+            self.window.blit(stat_value, stat_value_rect)
 
-                spacing += 35
+            spacing += 35
