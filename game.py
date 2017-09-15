@@ -260,14 +260,15 @@ class Game:
         if completed_lines_count == 0: # There wasn't any completed lines at all
             return
 
-        # Make all blocks above the bottommost completed line to fall
-        # TODO
-        # for i in range(0, completed_lines_count):
-        #     for block in self.fallen_blocks:
-        #         if block.is_bottommost():
-        #             continue
+        # Make all blocks above the bottommost completed line to fall for (total number of completed lines) blocks down
+        bottommost_completed_line = min(completed_lines.keys())
 
-        #         block.y += 1
+        for _ in range(0, completed_lines_count):
+            for block in self.fallen_blocks:
+                if block.y > bottommost_completed_line or block.is_bottommost():
+                    continue
+
+                block.y += 1
 
         # Compute and update the score
         score_to_add = completed_lines_count * settings.COMPLETED_LINE_SCORE
