@@ -143,13 +143,14 @@ class Tetrimino:
                     new_x = top_left_most_block_x + pat_x
                     new_y = top_left_most_block_y + pat_y
 
-                    # Check if the new bloc is colliding with an already fallen one
+                    # Check if the new bloc is colliding with an already fallen one. If yes, abort the rotating operation
                     for fallen_block in fallen_blocks:
                         if fallen_block.x == new_x and fallen_block.y == new_y:
-                            return # Abort the rotating operation if one block is colliding with an already fallen one
+                            return
 
-        self.pattern = new_pattern # Erase the old pattern by the new one
-        self._init(top_left_most_block_x, top_left_most_block_y) # Erase the old blocks by the new ones
+        # There will not be any issue while rotating this Tetrimino: erase the old pattern as well as the old blocks
+        self.pattern = new_pattern
+        self._init(top_left_most_block_x, top_left_most_block_y)
 
     def will_collide(self, fallen_blocks, direction=(0, 0)):
         """Check if this Tetrimino is about to collide with other blocks in the specified direction."""
