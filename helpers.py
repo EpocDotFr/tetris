@@ -66,7 +66,20 @@ def humanize_seconds(seconds):
     m = int((seconds % (60 * 60)) / 60)
     s = int(seconds % 60)
 
-    return '{}h {:>02}m {:>02}s'.format(h, m, s)
+    ret = []
+
+    if h:
+        ret.append(('{}h', h))
+
+    if m:
+        ret.append(('{:>02}m', m))
+
+    if s:
+        ret.append(('{:>02}s', s))
+
+    f, v = zip(*ret)
+
+    return ' '.join(f).format(*v)
 
 
 def humanize_integer(integer):
