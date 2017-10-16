@@ -6,6 +6,7 @@ import helpers
 import random
 import pygame
 import pickle
+import math
 import json
 import time
 import sys
@@ -271,7 +272,7 @@ class Game:
         if completed_lines_count == 4:
             score_to_add *= 2
 
-        # If the playground is empty after the Tetrimino has fallen: double the score
+        # If the playground is empty after the Tetrimino has fallen and lines removed: double the score (again)
         if not self.fallen_blocks:
             score_to_add *= 2
 
@@ -279,7 +280,7 @@ class Game:
         self.lines += completed_lines_count
 
         # Compute and update the new level (if applicable)
-        new_level = len(list(range(0, self.lines, settings.LEVEL_INCREASE_LINES_STEP)))
+        new_level = math.floor(self.lines / settings.LEVEL_INCREASE_LINES_STEP)
 
         # Did we reached a new level of difficulty?
         if self.level != new_level:
