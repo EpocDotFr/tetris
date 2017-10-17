@@ -63,7 +63,7 @@ def load_font(filename, size):
 def humanize_seconds(seconds):
     """Return a human-readable representation of the given number of seconds."""
     if not seconds:
-        return ''
+        return '00s'
 
     d = int(seconds / (60 * 60 * 24))
     h = int((seconds % (60 * 60 * 24)) / (60 * 60))

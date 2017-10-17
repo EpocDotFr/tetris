@@ -19,6 +19,7 @@ class Game:
         'level',
         'lines',
         'score',
+        'duration',
         'current_tetrimino',
         'next_tetrimino'
     ]
@@ -26,11 +27,13 @@ class Game:
     infos = [
         {'name': 'Level', 'value': 'level', 'format': helpers.humanize_integer},
         {'name': 'Lines', 'value': 'lines', 'format': helpers.humanize_integer},
-        {'name': 'Score', 'value': 'score', 'format': helpers.humanize_integer}
+        {'name': 'Score', 'value': 'score', 'format': helpers.humanize_integer},
+        {'name': 'Time', 'value': 'duration', 'format': helpers.humanize_seconds}
     ]
 
     stats = OrderedDict([
         ('play_time', {'name': 'Play time', 'value': 0, 'format': helpers.humanize_seconds}),
+        ('longest_game', {'name': 'Longest game', 'value': 0, 'format': helpers.humanize_seconds}),
         ('games_played', {'name': 'Total games played', 'value': 0, 'format': helpers.humanize_integer}),
         ('overall_score', {'name': 'Overall score', 'value': 0, 'format': helpers.humanize_integer}),
         ('overall_lines', {'name': 'Overall lines', 'value': 0, 'format': helpers.humanize_integer}),
@@ -69,6 +72,7 @@ class Game:
         self.level = 1
         self.lines = 0
         self.score = 0
+        self.duration = 0
 
         self.is_paused = False
         self.is_game_over = False
@@ -77,18 +81,19 @@ class Game:
         self.started_playing_at = int(time.time())
 
         self._set_current_tetrimino()
-        self._enable_or_update_falling_interval()
+        self._update_falling_interval()
+        self._toggle_duration_counter(True)
 
-    def _enable_or_update_falling_interval(self, force=None):
-        """Starts othe Tetrimino's falling."""
-        if force:
+    def _update_falling_interval(self, force=None):
+        """Update the Tetrimino's falling event."""
+        if force is not None:
             pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, force)
         else:
             pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_INITIAL_FALLING_INTERVAL - self.level * settings.TETRIMINOS_FALLING_INTERVAL_DECREASE_STEP)
 
-    def _disable_falling_interval(self):
-        """Stops the Tetrimino's falling."""
-        pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, 0)
+    def _toggle_duration_counter(self, enable=True):
+        """Update the game duration counter event."""
+        pygame.time.set_timer(settings.GAME_DURATION_EVENT, 1000 if enable else 0) # Every seconds
 
     def _set_current_tetrimino(self):
         """Sets the current falling Tetrimino along the next Tetrimino."""
@@ -101,7 +106,8 @@ class Game:
 
         # Check if the game is over
         if self.current_tetrimino.will_collide(self.fallen_blocks):
-            self._disable_falling_interval()
+            self._update_falling_interval(0)
+            self._toggle_duration_counter(False)
             self.is_game_over = True
             self._update_play_time()
 
@@ -117,13 +123,15 @@ class Game:
     def _toggle_pause(self, force=None):
         """Toggle pause on/off."""
         if force is False or (force is None and self.is_paused):
-            self._enable_or_update_falling_interval()
+            self._update_falling_interval()
+            self._toggle_duration_counter(True)
             self.is_paused = False
             self.started_playing_at = int(time.time())
 
             logging.info('Game unpaused')
         elif force is True or (force is None and not self.is_paused):
-            self._disable_falling_interval()
+            self._update_falling_interval(0)
+            self._toggle_duration_counter(False)
             self.is_paused = True
             self._update_play_time()
 
@@ -223,6 +231,9 @@ class Game:
         if self.level > self.stats['max_level']['value']:
             self.stats['max_level']['value'] = self.level
 
+        if self.duration > self.stats['longest_game']['value']:
+            self.stats['longest_game']['value'] = self.duration
+
         self.stats['overall_score']['value'] += self.score
         self.stats['overall_lines']['value'] += self.lines
 
@@ -286,7 +297,7 @@ class Game:
         if self.level != new_level:
             self.level = new_level
 
-            self._enable_or_update_falling_interval()
+            self._update_falling_interval()
 
     def update(self):
         """Perform every updates of the game logic, events handling and drawing.
@@ -296,6 +307,7 @@ class Game:
         for event in pygame.event.get():
             self._event_quit(event)
             self._event_falling_tetrimino(event)
+            self._event_game_duration(event)
             self._event_game_key(event)
 
         # Drawings
@@ -346,6 +358,13 @@ class Game:
             self._process_lines()
             self._set_current_tetrimino()
 
+    def _event_game_duration(self, event):
+        """Count the duration of the current game."""
+        if event.type != settings.GAME_DURATION_EVENT:
+            return
+
+        self.duration += 1
+
     def _event_game_key(self, event):
         """Handle the game keys."""
         if event.type == pygame.KEYDOWN:
@@ -362,12 +381,12 @@ class Game:
             elif event.key == pygame.K_RIGHT and not self.is_paused and not self.is_game_over:
                 self.current_tetrimino.move_right(self.fallen_blocks)
             elif event.key == pygame.K_DOWN and not self.is_paused and not self.is_game_over:
-                self._enable_or_update_falling_interval(settings.TETRIMINOS_FAST_FALLING_INTERVAL)
+                self._update_falling_interval(settings.TETRIMINOS_FAST_FALLING_INTERVAL)
             elif event.key == pygame.K_UP and not self.is_paused and not self.is_game_over:
                 self.current_tetrimino.rotate(self.fallen_blocks)
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_DOWN and not self.is_paused and not self.is_game_over:
-                self._enable_or_update_falling_interval()
+                self._update_falling_interval()
 
     # --------------------------------------------------------------------------
     # Drawing handlers
@@ -511,7 +530,8 @@ class Game:
         """Draws the Game over screen."""
         recap_string = [
             'You completed {} lines, which gained you'.format(self.lines),
-            'to the level {} with a score of {}.'.format(self.level, self.score),
+            'to the level {} with a score of {}'.format(self.level, self.score),
+            'in {}.'.format(helpers.humanize_seconds(self.duration)),
             'Press "F1" to start a new game.'
         ]
 

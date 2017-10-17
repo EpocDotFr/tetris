@@ -34,6 +34,7 @@ TEXT_COLOR = (113, 130, 165)
 RESOURCES_ROOT = os.path.join(sys._MEIPASS, 'resources') if getattr(sys, 'frozen', False) else 'resources'
 
 TETRIMINOS_FALLING_EVENT = pygame.USEREVENT + 1
+GAME_DURATION_EVENT = pygame.USEREVENT + 2
 
 INFO_PANEL_WIDTH = 150
 
