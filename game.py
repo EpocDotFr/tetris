@@ -267,12 +267,13 @@ class Game:
         if completed_lines_count == 0: # There wasn't any completed lines at all
             return
 
-        # Make all blocks above the bottommost completed line to fall for (total number of completed lines) blocks down
-        bottommost_completed_line = min(completed_lines.keys())
+        # Starting from the bottommost line of the playground, make everything above an empty line to fall for one block down
+        for y in range(settings.ROWS, -1, -1):
+            if y not in completed_lines:
+                continue
 
-        for _ in range(0, completed_lines_count):
             for block in self.fallen_blocks:
-                if block.y > bottommost_completed_line or block.is_bottommost():
+                if block.y > y or block.is_bottommost():
                     continue
 
                 block.y += 1
@@ -284,7 +285,7 @@ class Game:
         if completed_lines_count == 4:
             score_to_add *= 2
 
-        # If the playground is empty after the Tetrimino has fallen and lines removed: double the score (again)
+        # If the playground is empty after the Tetrimino has fallen and lines has been removed: double the score (again)
         if not self.fallen_blocks:
             score_to_add *= 2
 
