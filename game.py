@@ -76,6 +76,7 @@ class Game:
 
         self.is_paused = False
         self.is_game_over = False
+        self.is_fast_falling = False
         self.show_stats = False
 
         self.started_playing_at = int(time.time())
@@ -297,7 +298,8 @@ class Game:
         if self.level != new_level:
             self.level = new_level
 
-            self._update_falling_interval()
+            if not self.is_fast_falling: # If the player has pressed the down arrow, do not change the speed of the fall
+                self._update_falling_interval()
 
     def update(self):
         """Perform every updates of the game logic, events handling and drawing.
@@ -382,11 +384,13 @@ class Game:
                 self.current_tetrimino.move_right(self.fallen_blocks)
             elif event.key == pygame.K_DOWN and not self.is_paused and not self.is_game_over:
                 self._update_falling_interval(settings.TETRIMINOS_FAST_FALLING_INTERVAL)
+                self.is_fast_falling = True
             elif event.key == pygame.K_UP and not self.is_paused and not self.is_game_over:
                 self.current_tetrimino.rotate(self.fallen_blocks)
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_DOWN and not self.is_paused and not self.is_game_over:
                 self._update_falling_interval()
+                self.is_fast_falling = False
 
     # --------------------------------------------------------------------------
     # Drawing handlers
