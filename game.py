@@ -177,7 +177,8 @@ class Game:
     def _save_game(self):
         """Save the current game."""
         if self.is_game_over:
-            return
+            if os.path.isfile(settings.SAVE_FILE_NAME):
+                os.remove(settings.SAVE_FILE_NAME)
 
         logging.info('Saving current game')
 
@@ -269,7 +270,7 @@ class Game:
             return
 
         # Starting from the bottommost line of the playground, make everything above an empty line to fall for one block down
-        for y in range(settings.ROWS, -1, -1):
+        for y in range(0, settings.ROWS):
             if y not in completed_lines:
                 continue
 
