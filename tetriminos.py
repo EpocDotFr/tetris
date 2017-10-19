@@ -88,8 +88,10 @@ class Tetrimino:
 
         for pat_y, y_val in enumerate(self.pattern):
             for pat_x, x_val in enumerate(self.pattern[pat_y]):
-                if self.pattern[pat_y][pat_x] == 1:
-                    self.blocks.append(Block(self.background_color, x + pat_x, y + pat_y))
+                if self.pattern[pat_y][pat_x] != 1:
+                    continue
+
+                self.blocks.append(Block(self.background_color, x + pat_x, y + pat_y))
 
     def make_it_fall(self, fallen_blocks):
         """Makes this Tetrimino to fall."""
@@ -121,36 +123,62 @@ class Tetrimino:
 
         return True
 
-    def rotate(self, fallen_blocks):
-        """Rotates this Tetrimino by 90 degrees clockwise."""
-        # Get the position of the top-left-most block of this Tetrimino. This will be our reference position on the
-        # playground for all rotation operations
-        top_left_most_block_x = settings.COLS - 1
-        top_left_most_block_y = settings.ROWS - 1
+    def get_top_left_pos(self):
+        """Return the position of the top-left-most block of this Tetrimino."""
+        left_most_x = settings.COLS - 1
+        top_most_y = settings.ROWS - 1
 
         for block in self.blocks:
-            if block.x < top_left_most_block_x and block.y < top_left_most_block_y:
-                top_left_most_block_x = block.x
-                top_left_most_block_y = block.y
+            if block.x < left_most_x:
+                left_most_x = block.x
+
+            if block.y < top_most_y:
+                top_most_y = block.y
+
+        return left_most_x, top_most_y
+
+    def rotate(self, fallen_blocks):
+        """Rotates this Tetrimino by 90 degrees clockwise."""
+        left_most_block_x, top_most_block_y = self.get_top_left_pos()
 
         # Rotate the pattern of this Tetrimino by 90 degress clockwise
         new_pattern = list(zip(*self.pattern[::-1]))
 
-        # Check if the new position of all the blocks will collide with others or with the playground edges
+        new_pattern_height = len(new_pattern)
+        new_pattern_width = len(new_pattern[0])
+
+        # Check if the new position of all the blocks will collide with others or will go outside the playground
         for pat_y, y_val in enumerate(new_pattern):
             for pat_x, x_val in enumerate(new_pattern[pat_y]):
-                if new_pattern[pat_y][pat_x] == 1:
-                    new_x = top_left_most_block_x + pat_x
-                    new_y = top_left_most_block_y + pat_y
+                if new_pattern[pat_y][pat_x] != 1:
+                    continue
 
-                    # Check if the new bloc is colliding with an already fallen one. If yes, abort the rotating operation
-                    for fallen_block in fallen_blocks:
-                        if fallen_block.x == new_x and fallen_block.y == new_y:
-                            return
+                new_x = left_most_block_x + pat_x
+                new_y = top_most_block_y + pat_y
 
-        # There will not be any issue while rotating this Tetrimino: erase the old pattern as well as the old blocks
+                if new_x < 0:
+                    left_most_block_x = 0
+
+                if new_x > settings.COLS - 1:
+                    left_most_block_x = (settings.COLS - 1) - (new_pattern_width - 1)
+
+                if new_y < 0:
+                    top_most_block_y = 0
+
+                if new_y > settings.ROWS - 1:
+                    top_most_block_y = (settings.ROWS - 1) - (new_pattern_height - 1)
+
+                new_x = left_most_block_x + pat_x
+                new_y = top_most_block_y + pat_y
+
+                # Check if the new block is colliding with an already fallen one. If yes, abort the rotating operation
+                for fallen_block in fallen_blocks:
+                    if fallen_block.x == new_x and fallen_block.y == new_y:
+                        return
+
+        # If there'll not be any issue while rotating this Tetrimino: erase the old pattern as well as the old blocks
         self.pattern = new_pattern
-        self._init(top_left_most_block_x, top_left_most_block_y)
+        self._init(left_most_block_x, top_most_block_y)
 
     def will_collide(self, fallen_blocks, direction=(0, 0)):
         """Check if this Tetrimino is about to collide with other blocks in the specified direction."""
@@ -200,7 +228,6 @@ class JTetrimino(Tetrimino):
     pattern = [
         [0, 1],
         [0, 1],
-        [0, 1],
         [1, 1]
     ]
 
@@ -208,7 +235,6 @@ class JTetrimino(Tetrimino):
 class LTetrimino(Tetrimino):
     background_color = (255, 165, 0)
     pattern = [
-        [1, 0],
         [1, 0],
         [1, 0],
         [1, 1]
