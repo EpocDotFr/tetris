@@ -60,7 +60,11 @@ class Game:
         self.big_font = helpers.load_font('coolvetica.ttf', 30)
 
         self._load_stats()
-        self._start_new_game()
+
+        if os.path.isfile(settings.SAVE_FILE_NAME):
+            self._load_game()
+        else:
+            self._start_new_game()
 
     def _start_new_game(self):
         """Start a new game."""
@@ -154,10 +158,6 @@ class Game:
 
     def _load_game(self):
         """Load a saved game."""
-        if not os.path.isfile(settings.SAVE_FILE_NAME):
-            logging.info('Save file does not exists')
-            return
-
         logging.info('Loading saved game')
 
         with open(settings.SAVE_FILE_NAME, 'rb') as f:
@@ -169,6 +169,7 @@ class Game:
 
         self.is_paused = False
         self.is_game_over = False
+        self.is_fast_falling = False
         self.show_stats = False
 
         self._toggle_pause(True)
@@ -376,8 +377,6 @@ class Game:
             elif event.key == pygame.K_F1:
                 self._start_new_game()
             elif event.key == pygame.K_F2:
-                self._load_game()
-            elif event.key == pygame.K_F3:
                 self._toggle_stats()
             elif event.key == pygame.K_LEFT and not self.is_paused and not self.is_game_over:
                 self.current_tetrimino.move_left(self.fallen_blocks)

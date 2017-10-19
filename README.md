@@ -10,7 +10,7 @@ The [Tetris](https://en.wikipedia.org/wiki/Tetris) game, implemented in Python.
 
   - All the Tetris rules
   - State of the art graphics
-  - Automatic game saving when quitting
+  - Automatic game saving when quitting. If there's a saved game it is automatically loaded, too
   - Ability to load the latest saved game
   - Ability to pause the game
   - Stats
@@ -34,8 +34,7 @@ python run.py
   - <kbd>ESC</kbd> closes the game
   - <kbd>PAUSE</kbd> pauses the game
   - <kbd>F1</kbd> starts a new game
-  - <kbd>F2</kbd> loads the latest saved game (if it exists)
-  - <kbd>F3</kbd> displays stats
+  - <kbd>F2</kbd> displays stats
   - <kbd>←</kbd> and <kbd>→</kbd> moves the Tetrimino respectively to the left and to the right
   - <kbd>↑</kbd> rotates the Tetrimino
   - <kbd>↓</kbd> makes the Tetrimino to fall faster
