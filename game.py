@@ -269,7 +269,7 @@ class Game:
         if completed_lines_count == 0: # There wasn't any completed lines at all
             return
 
-        # Starting from the bottommost line of the playground, make everything above an empty line to fall for one block down
+        # Starting from the topmost line of the playground, make everything above an empty line to fall for one block down
         for y in range(0, settings.ROWS):
             if y not in completed_lines:
                 continue
