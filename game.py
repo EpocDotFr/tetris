@@ -121,6 +121,9 @@ class Game:
             self._update_game_stats()
             self._save_stats()
 
+            if os.path.isfile(settings.SAVE_FILE_NAME):
+                os.remove(settings.SAVE_FILE_NAME)
+
     def _get_random_tetrimino(self):
         """Get a random reference to a Tetrimino class."""
         return getattr(tetriminos, random.choice(tetriminos.__all__))
@@ -177,8 +180,7 @@ class Game:
     def _save_game(self):
         """Save the current game."""
         if self.is_game_over:
-            if os.path.isfile(settings.SAVE_FILE_NAME):
-                os.remove(settings.SAVE_FILE_NAME)
+            return
 
         logging.info('Saving current game')
 
