@@ -297,7 +297,7 @@ class Game:
         self.lines += completed_lines_count
 
         # Compute and update the new level (if applicable)
-        new_level = math.floor(self.lines / settings.LEVEL_INCREASE_LINES_STEP)
+        new_level = math.ceil(self.lines / settings.LEVEL_INCREASE_LINES_STEP)
 
         # Did we reached a new level of difficulty?
         if self.level != new_level:
