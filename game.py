@@ -6,7 +6,6 @@ import helpers
 import random
 import pygame
 import pickle
-import math
 import json
 import time
 import sys
@@ -297,7 +296,7 @@ class Game:
         self.lines += completed_lines_count
 
         # Compute and update the new level (if applicable)
-        new_level = math.ceil(self.lines / settings.LEVEL_INCREASE_LINES_STEP)
+        new_level = len(list(range(0, self.lines, settings.LEVEL_INCREASE_LINES_STEP)))
 
         # Did we reached a new level of difficulty?
         if self.level != new_level:
