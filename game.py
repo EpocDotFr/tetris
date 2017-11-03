@@ -1,12 +1,12 @@
 from collections import OrderedDict
 import save_game_manager
+import stats_manager
 import tetriminos
 import settings
 import logging
 import helpers
 import random
 import pygame
-import json
 import time
 import sys
 import os
@@ -58,7 +58,7 @@ class Game:
         self.normal_font = helpers.load_font('coolvetica.ttf', 18)
         self.big_font = helpers.load_font('coolvetica.ttf', 30)
 
-        self._load_stats()
+        stats_manager.load_stats(settings.STATS_FILE_NAME, self.stats)
 
         if os.path.isfile(settings.SAVE_FILE_NAME):
             save_game_manager.load_game(settings.SAVE_FILE_NAME, self, self.save_data)
@@ -125,7 +125,7 @@ class Game:
             logging.info('Game over')
 
             self._update_game_stats()
-            self._save_stats()
+            stats_manager.save_stats(settings.STATS_FILE_NAME, self.stats)
 
             if os.path.isfile(settings.SAVE_FILE_NAME):
                 os.remove(settings.SAVE_FILE_NAME)
@@ -164,32 +164,6 @@ class Game:
             self.show_stats = True
 
             logging.info('Showing stats')
-
-    def _load_stats(self):
-        """Save the current stats to a JSON file."""
-        if not os.path.isfile(settings.STATS_FILE_NAME):
-            logging.info('Stats file does not exists')
-            return
-
-        logging.info('Loading stats')
-
-        with open(settings.STATS_FILE_NAME, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-
-            for key, value in data.items():
-                self.stats[key]['value'] = value
-
-    def _save_stats(self):
-        """Load stats from a JSON file."""
-        logging.info('Saving stats')
-
-        data = {}
-
-        for key, stat in self.stats.items():
-            data[key] = stat['value']
-
-        with open(settings.STATS_FILE_NAME, 'w', encoding='utf-8') as f:
-            json.dump(data, f)
 
     def _update_play_time(self):
         """Update the play time in the stats."""
@@ -325,7 +299,7 @@ class Game:
                 save_game_manager.save_game(settings.SAVE_FILE_NAME, self, self.save_data)
 
             self._update_play_time()
-            self._save_stats()
+            stats_manager.save_stats(settings.STATS_FILE_NAME, self.stats)
             pygame.quit()
             sys.exit()
 
