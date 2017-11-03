@@ -1,11 +1,11 @@
 from collections import OrderedDict
+import save_game_manager
 import tetriminos
 import settings
 import logging
 import helpers
 import random
 import pygame
-import pickle
 import json
 import time
 import sys
@@ -61,7 +61,14 @@ class Game:
         self._load_stats()
 
         if os.path.isfile(settings.SAVE_FILE_NAME):
-            self._load_game()
+            save_game_manager.load_game(settings.SAVE_FILE_NAME, self, self.save_data)
+
+            self.is_paused = False
+            self.is_game_over = False
+            self.is_fast_falling = False
+            self.show_stats = False
+
+            self._toggle_pause(True)
         else:
             self._start_new_game()
 
@@ -157,39 +164,6 @@ class Game:
             self.show_stats = True
 
             logging.info('Showing stats')
-
-    def _load_game(self):
-        """Load a saved game."""
-        logging.info('Loading saved game')
-
-        with open(settings.SAVE_FILE_NAME, 'rb') as f:
-            data = pickle.load(f)
-
-        for sd in self.save_data:
-            if sd in data:
-                setattr(self, sd, data[sd])
-
-        self.is_paused = False
-        self.is_game_over = False
-        self.is_fast_falling = False
-        self.show_stats = False
-
-        self._toggle_pause(True)
-
-    def _save_game(self):
-        """Save the current game."""
-        if self.is_game_over:
-            return
-
-        logging.info('Saving current game')
-
-        data = {}
-
-        for sd in self.save_data:
-            data[sd] = getattr(self, sd)
-
-        with open(settings.SAVE_FILE_NAME, 'wb') as f:
-            pickle.dump(data, f)
 
     def _load_stats(self):
         """Save the current stats to a JSON file."""
@@ -347,7 +321,9 @@ class Game:
     def _event_quit(self, event):
         """Called when the game must be closed."""
         if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            self._save_game()
+            if not self.is_game_over:
+                save_game_manager.save_game(settings.SAVE_FILE_NAME, self, self.save_data)
+
             self._update_play_time()
             self._save_stats()
             pygame.quit()
