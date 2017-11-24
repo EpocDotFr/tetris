@@ -54,7 +54,11 @@ class Game:
         self.started_playing_at = None
 
         self._load_fonts()
-        self._load_musics()
+
+        logging.info('Loading music')
+
+        helpers.load_music('its_raining_pixels.wav', volume=settings.MUSIC_VOLUME)
+
         self._load_sounds()
 
         stats_manager.load_stats(settings.STATS_FILE_NAME, self.stats)
@@ -77,12 +81,6 @@ class Game:
 
         self.normal_font = helpers.load_font('coolvetica.ttf', 18)
         self.big_font = helpers.load_font('coolvetica.ttf', 30)
-
-    def _load_musics(self):
-        """Load the musics."""
-        logging.info('Loading musics')
-
-        self.main_music = helpers.load_music('its_raining_pixels.wav', volume=settings.MUSIC_VOLUME)
 
     def _load_sounds(self):
         """Load the sound effects."""
