@@ -53,10 +53,9 @@ class Game:
         self.next_tetrimino = None
         self.started_playing_at = None
 
-        logging.info('Loading fonts')
-
-        self.normal_font = helpers.load_font('coolvetica.ttf', 18)
-        self.big_font = helpers.load_font('coolvetica.ttf', 30)
+        self._load_fonts()
+        self._load_musics()
+        self._load_sounds()
 
         stats_manager.load_stats(settings.STATS_FILE_NAME, self.stats)
 
@@ -71,6 +70,29 @@ class Game:
             self._toggle_pause(True)
         else:
             self._start_new_game()
+
+    def _load_fonts(self):
+        """Load the fonts."""
+        logging.info('Loading fonts')
+
+        self.normal_font = helpers.load_font('coolvetica.ttf', 18)
+        self.big_font = helpers.load_font('coolvetica.ttf', 30)
+
+    def _load_musics(self):
+        """Load the musics."""
+        logging.info('Loading musics')
+
+        self.main_music = helpers.load_music('its_raining_pixels.wav', volume=settings.MUSIC_VOLUME)
+
+    def _load_sounds(self):
+        """Load the sound effects."""
+        logging.info('Loading sounds')
+
+        self.move_sound = helpers.load_sound('move.ogg', volume=settings.SOUNDS_VOLUME)
+        self.rotate_sound = helpers.load_sound('rotate.ogg', volume=settings.SOUNDS_VOLUME)
+        self.placed_sound = helpers.load_sound('placed.ogg', volume=settings.SOUNDS_VOLUME)
+        self.completed_lines_sound = helpers.load_sound('completed_lines.ogg', volume=settings.SOUNDS_VOLUME)
+        self.new_level_sound = helpers.load_sound('new_level.ogg', volume=settings.SOUNDS_VOLUME)
 
     def _start_new_game(self):
         """Start a new game."""
@@ -248,10 +270,14 @@ class Game:
 
         # Did we reached a new level of difficulty?
         if self.level != new_level:
+            self.new_level_sound.play()
+
             self.level = new_level
 
             if not self.is_fast_falling: # If the player has pressed the down arrow, do not change the speed of the fall
                 self._update_falling_interval()
+        else:
+            self.completed_lines_sound.play()
 
     def update(self):
         """Perform every updates of the game logic, events handling and drawing.
@@ -331,14 +357,17 @@ class Game:
             elif event.key == pygame.K_F2:
                 self._toggle_stats()
             elif event.key == pygame.K_LEFT and not self.is_paused and not self.is_game_over:
-                self.current_tetrimino.move_left(self.fallen_blocks)
+                if self.current_tetrimino.move_left(self.fallen_blocks):
+                    self.move_sound.play()
             elif event.key == pygame.K_RIGHT and not self.is_paused and not self.is_game_over:
-                self.current_tetrimino.move_right(self.fallen_blocks)
+                if self.current_tetrimino.move_right(self.fallen_blocks):
+                    self.move_sound.play()
             elif event.key == pygame.K_DOWN and not self.is_paused and not self.is_game_over:
                 self._update_falling_interval(settings.TETRIMINOS_FAST_FALLING_INTERVAL)
                 self.is_fast_falling = True
             elif event.key == pygame.K_UP and not self.is_paused and not self.is_game_over:
-                self.current_tetrimino.rotate(self.fallen_blocks)
+                if self.current_tetrimino.rotate(self.fallen_blocks):
+                    self.rotate_sound.play()
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_DOWN and not self.is_paused and not self.is_game_over:
                 self._update_falling_interval()

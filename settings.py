@@ -27,6 +27,9 @@ WINDOW_BACKGROUND_COLOR = (218, 235, 252)
 PLAYGROUND_BACKGROUND_COLOR = (190, 207, 234)
 TEXT_COLOR = (113, 130, 165)
 
+MUSIC_VOLUME = 0.2
+SOUNDS_VOLUME = 0.3
+
 # ----------------------------------------------------------------------
 # Game constants - do not edit anything after this line
 
