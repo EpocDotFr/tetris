@@ -22,6 +22,7 @@ def run():
         '.'.join(str(v) for v in pygame.get_sdl_version())
     ))
 
+    pygame.mixer.pre_init(0, 0, 2, 2048) # Zeros makes PyGame to use default vlaues
     pygame.init()
 
     logging.info('Initializing game')
