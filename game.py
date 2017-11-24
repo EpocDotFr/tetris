@@ -55,9 +55,9 @@ class Game:
 
         self._load_fonts()
 
-        logging.info('Loading music')
+        logging.info('Loading random music')
 
-        helpers.load_music('its_raining_pixels.wav', volume=settings.MUSIC_VOLUME)
+        helpers.load_random_music(['its_raining_pixels.wav', 'its_always_sunny_in_the_80s.wav'], volume=settings.MUSIC_VOLUME)
 
         self._load_sounds()
 

@@ -66,7 +66,7 @@ levels (they are initially falling for one block down every 1 second).
   - Icon by [Everaldo Coelho](https://www.iconfinder.com/icons/3459/computer_game_tetris_icon) (freeware)
   - Font by [Typodermic Fonts Inc](http://www.dafont.com/coolvetica.font) (freeware)
   - Sound effects by [Kenney](https://kenney.nl/assets/digital-audio) (CC0 1.0 Universal)
-  - Music by [SoundImage.org](http://soundimage.org/) (Royalty-Free)
+  - Musics by [SoundImage.org](http://soundimage.org/) (Royalty-Free)
   - Tetris™ and Tetriminos™ are trademarks of The Tetris Company. This project isn't supported nor endorsed by The Tetris Company
 
 ## End words
