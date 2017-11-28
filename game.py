@@ -54,11 +54,6 @@ class Game:
         self.started_playing_at = None
 
         self._load_fonts()
-
-        logging.info('Loading random music')
-
-        helpers.load_random_music(['its_raining_pixels.wav', 'its_always_sunny_in_the_80s.wav'], volume=settings.MUSIC_VOLUME)
-
         self._load_sounds()
 
         stats_manager.load_stats(settings.STATS_FILE_NAME, self.stats)
@@ -70,6 +65,8 @@ class Game:
             self.is_game_over = False
             self.is_fast_falling = False
             self.show_stats = False
+
+            self._load_random_music()
 
             self._toggle_pause(True)
         else:
@@ -91,6 +88,12 @@ class Game:
         self.placed_sound = helpers.load_sound('placed.ogg', volume=settings.SOUNDS_VOLUME)
         self.completed_lines_sound = helpers.load_sound('completed_lines.ogg', volume=settings.SOUNDS_VOLUME)
         self.new_level_sound = helpers.load_sound('new_level.ogg', volume=settings.SOUNDS_VOLUME)
+
+    def _load_random_music(self):
+        """Load and play a random music."""
+        logging.info('Loading random music')
+
+        helpers.load_random_music(['its_raining_pixels.wav', 'its_always_sunny_in_the_80s.wav'], volume=settings.MUSIC_VOLUME)
 
     def _start_new_game(self):
         """Start a new game."""
@@ -114,6 +117,8 @@ class Game:
         self._set_current_tetrimino()
         self._update_falling_interval()
         self._toggle_duration_counter(True)
+
+        self._load_random_music()
 
     def _update_falling_interval(self, force=None):
         """Update the Tetrimino's falling event."""
