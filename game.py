@@ -288,10 +288,16 @@ class Game:
 
         # Events handling
         for event in pygame.event.get():
-            self._event_quit(event)
-            self._event_falling_tetrimino(event)
-            self._event_game_duration(event)
-            self._event_game_key(event)
+            event_handlers = [
+                self._event_quit,
+                self._event_falling_tetrimino,
+                self._event_game_duration,
+                self._event_game_key
+            ]
+
+            for handler in event_handlers:
+                if handler(event):
+                    break
 
         # Drawings
         self.window.fill(settings.WINDOW_BACKGROUND_COLOR)
@@ -329,13 +335,16 @@ class Game:
 
             self._update_play_time()
             stats_manager.save_stats(settings.STATS_FILE_NAME, self.stats)
+
             pygame.quit()
             sys.exit()
+
+        return False
 
     def _event_falling_tetrimino(self, event):
         """Makes the current tetrimino to fall."""
         if event.type != settings.TETRIMINOS_FALLING_EVENT:
-            return
+            return False
 
         if not self.current_tetrimino.make_it_fall(self.fallen_blocks):
             self.placed_sound.play()
@@ -345,38 +354,60 @@ class Game:
             self._process_lines()
             self._set_current_tetrimino()
 
+        return True
+
     def _event_game_duration(self, event):
         """Count the duration of the current game."""
         if event.type != settings.GAME_DURATION_EVENT:
-            return
+            return False
 
         self.duration += 1
+
+        return True
 
     def _event_game_key(self, event):
         """Handle the game keys."""
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_PAUSE and not self.is_game_over and not self.show_stats:
                 self._toggle_pause()
+
+                return True
             elif event.key == pygame.K_F1:
                 self._start_new_game()
+
+                return True
             elif event.key == pygame.K_F2:
                 self._toggle_stats()
+
+                return True
             elif event.key == pygame.K_LEFT and not self.is_paused and not self.is_game_over:
                 if self.current_tetrimino.move_left(self.fallen_blocks):
                     self.move_sound.play()
+
+                    return True
             elif event.key == pygame.K_RIGHT and not self.is_paused and not self.is_game_over:
                 if self.current_tetrimino.move_right(self.fallen_blocks):
                     self.move_sound.play()
+
+                    return True
             elif event.key == pygame.K_DOWN and not self.is_paused and not self.is_game_over:
                 self._update_falling_interval(settings.TETRIMINOS_FAST_FALLING_INTERVAL)
                 self.is_fast_falling = True
+
+                return True
             elif event.key == pygame.K_UP and not self.is_paused and not self.is_game_over:
                 if self.current_tetrimino.rotate(self.fallen_blocks):
                     self.rotate_sound.play()
+
+                    return True
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_DOWN and not self.is_paused and not self.is_game_over:
                 self._update_falling_interval()
                 self.is_fast_falling = False
+
+                return True
+
+        return False
 
     # --------------------------------------------------------------------------
     # Drawing handlers
