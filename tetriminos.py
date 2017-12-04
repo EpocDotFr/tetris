@@ -21,7 +21,7 @@ class Block(pygame.sprite.Sprite):
         self.x = x
         self.y = y
 
-        self._init()
+        self._draw()
 
     def __getstate__(self):
         """Needed by Pickle to give the proper attributes to be picked."""
@@ -36,10 +36,10 @@ class Block(pygame.sprite.Sprite):
         """Needed by Pickle to properly initialize this Block instance."""
         self.__dict__.update(state)
 
-        self._init()
+        self._draw()
 
-    def _init(self):
-        """Initialize this Block object."""
+    def _draw(self):
+        """Draw this Block object."""
         self.image = pygame.Surface((settings.BLOCKS_SIDE_SIZE, settings.BLOCKS_SIDE_SIZE), pygame.SRCALPHA, 32).convert_alpha()
         self.image.fill(self.background_color)
 
@@ -80,10 +80,10 @@ class Block(pygame.sprite.Sprite):
 
 class Tetrimino:
     def __init__(self, x, y):
-        self._init(x, y)
+        self._draw(x, y)
 
-    def _init(self, x, y):
-        """Build the blocks of this Tetrimino."""
+    def _draw(self, x, y):
+        """Draw the blocks of this Tetrimino."""
         self.blocks = []
 
         for pat_y, y_val in enumerate(self.pattern):
@@ -178,7 +178,7 @@ class Tetrimino:
 
         # If there'll not be any issue while rotating this Tetrimino: erase the old pattern as well as the old blocks
         self.pattern = new_pattern
-        self._init(left_most_block_x, top_most_block_y)
+        self._draw(left_most_block_x, top_most_block_y)
 
         return True
 
