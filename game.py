@@ -76,18 +76,22 @@ class Game:
         """Load the fonts."""
         logging.info('Loading fonts')
 
-        self.normal_font = helpers.load_font('coolvetica.ttf', 18)
-        self.big_font = helpers.load_font('coolvetica.ttf', 30)
+        self.fonts = {
+            'normal': helpers.load_font('coolvetica.ttf', 18),
+            'big': helpers.load_font('coolvetica.ttf', 30)
+        }
 
     def _load_sounds(self):
         """Load the sound effects."""
         logging.info('Loading sounds')
 
-        self.move_sound = helpers.load_sound('move.ogg', volume=settings.SOUNDS_VOLUME)
-        self.rotate_sound = helpers.load_sound('rotate.ogg', volume=settings.SOUNDS_VOLUME)
-        self.placed_sound = helpers.load_sound('placed.ogg', volume=settings.SOUNDS_VOLUME)
-        self.completed_lines_sound = helpers.load_sound('completed_lines.ogg', volume=settings.SOUNDS_VOLUME)
-        self.new_level_sound = helpers.load_sound('new_level.ogg', volume=settings.SOUNDS_VOLUME)
+        self.sounds = {
+            'move': helpers.load_sound('move.ogg', volume=settings.SOUNDS_VOLUME),
+            'rotate': helpers.load_sound('rotate.ogg', volume=settings.SOUNDS_VOLUME),
+            'place': helpers.load_sound('place.ogg', volume=settings.SOUNDS_VOLUME),
+            'lines_completed': helpers.load_sound('lines_completed.ogg', volume=settings.SOUNDS_VOLUME),
+            'new_level': helpers.load_sound('new_level.ogg', volume=settings.SOUNDS_VOLUME)
+        }
 
     def _load_random_music(self):
         """Load and play a random music."""
@@ -273,14 +277,14 @@ class Game:
 
         # Did we reached a new level of difficulty?
         if self.level != new_level:
-            self.new_level_sound.play()
+            self.sounds['new_level'].play()
 
             self.level = new_level
 
             if not self.is_fast_falling: # If the player has pressed the down arrow, do not change the speed of the fall
                 self._update_falling_interval()
         else:
-            self.completed_lines_sound.play()
+            self.sounds['lines_completed'].play()
 
     def update(self):
         """Perform every updates of the game logic, events handling and drawing.
@@ -347,7 +351,7 @@ class Game:
             return False
 
         if not self.current_tetrimino.make_it_fall(self.fallen_blocks):
-            self.placed_sound.play()
+            self.sounds['place'].play()
 
             self.fallen_blocks.extend(self.current_tetrimino.blocks.copy())
 
@@ -382,12 +386,12 @@ class Game:
                 return True
             elif event.key == pygame.K_LEFT and not self.is_paused and not self.is_game_over:
                 if self.current_tetrimino.move_left(self.fallen_blocks):
-                    self.move_sound.play()
+                    self.sounds['move'].play()
 
                     return True
             elif event.key == pygame.K_RIGHT and not self.is_paused and not self.is_game_over:
                 if self.current_tetrimino.move_right(self.fallen_blocks):
-                    self.move_sound.play()
+                    self.sounds['move'].play()
 
                     return True
             elif event.key == pygame.K_DOWN and not self.is_paused and not self.is_game_over:
@@ -397,7 +401,7 @@ class Game:
                 return True
             elif event.key == pygame.K_UP and not self.is_paused and not self.is_game_over:
                 if self.current_tetrimino.rotate(self.fallen_blocks):
-                    self.rotate_sound.play()
+                    self.sounds['rotate'].play()
 
                     return True
         elif event.type == pygame.KEYUP:
@@ -468,7 +472,7 @@ class Game:
 
     def _draw_info_panel(self):
         """Draws the information panel."""
-        next_tetrimino_label = self.normal_font.render('Next', True, settings.TEXT_COLOR)
+        next_tetrimino_label = self.fonts['normal'].render('Next', True, settings.TEXT_COLOR)
         next_tetrimino_label_rect = next_tetrimino_label.get_rect()
         next_tetrimino_label_rect.left = settings.PLAYGROUND_WIDTH + 20
         next_tetrimino_label_rect.top = 15
@@ -481,7 +485,7 @@ class Game:
 
         for info in self.infos:
             # Label
-            info_label = self.normal_font.render(info['name'], True, settings.TEXT_COLOR)
+            info_label = self.fonts['normal'].render(info['name'], True, settings.TEXT_COLOR)
             info_label_rect = info_label.get_rect()
             info_label_rect.left = settings.PLAYGROUND_WIDTH + 20
             info_label_rect.top = spacing
@@ -492,7 +496,7 @@ class Game:
             value = getattr(self, info['value'])
             value_format = info['format'] if 'format' in info else str
 
-            info_value = self.normal_font.render(value_format(value), True, settings.TEXT_COLOR)
+            info_value = self.fonts['normal'].render(value_format(value), True, settings.TEXT_COLOR)
             info_value_rect = info_value.get_rect()
             info_value_rect.right = self.window_rect.w - 20
             info_value_rect.top = spacing
@@ -523,7 +527,7 @@ class Game:
         self._draw_fullscreen_transparent_background()
 
         # Title
-        title_label = self.big_font.render(title, True, settings.TEXT_COLOR)
+        title_label = self.fonts['big'].render(title, True, settings.TEXT_COLOR)
         title_label_rect = title_label.get_rect()
         title_label_rect.center = self.window_rect.center
         title_label_rect.centery -= 15
@@ -534,7 +538,7 @@ class Game:
         spacing = 15
 
         for t in text:
-            text_label = self.normal_font.render(t, True, settings.TEXT_COLOR)
+            text_label = self.fonts['normal'].render(t, True, settings.TEXT_COLOR)
             text_label_rect = text_label.get_rect()
             text_label_rect.center = self.window_rect.center
             text_label_rect.centery += spacing
@@ -563,7 +567,7 @@ class Game:
         self._draw_fullscreen_transparent_background()
 
         # Title
-        title_label = self.big_font.render('Statistics', True, settings.TEXT_COLOR)
+        title_label = self.fonts['big'].render('Statistics', True, settings.TEXT_COLOR)
         title_label_rect = title_label.get_rect()
         title_label_rect.centerx = self.window_rect.centerx
         title_label_rect.top = 20
@@ -575,7 +579,7 @@ class Game:
 
         for key, stat in self.stats.items():
             # Stat label
-            stat_label = self.normal_font.render(stat['name'], True, settings.TEXT_COLOR)
+            stat_label = self.fonts['normal'].render(stat['name'], True, settings.TEXT_COLOR)
             stat_label_rect = stat_label.get_rect()
             stat_label_rect.left = 40
             stat_label_rect.top = spacing
@@ -585,7 +589,7 @@ class Game:
             # Stat value
             stat_value_format = stat['format'] if 'format' in stat else str
 
-            stat_value = self.normal_font.render(stat_value_format(stat['value']), True, settings.TEXT_COLOR)
+            stat_value = self.fonts['normal'].render(stat_value_format(stat['value']), True, settings.TEXT_COLOR)
             stat_value_rect = stat_value.get_rect()
             stat_value_rect.right = self.window_rect.w - 40
             stat_value_rect.top = spacing
