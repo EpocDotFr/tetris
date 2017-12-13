@@ -11,7 +11,6 @@ The [Tetris](https://en.wikipedia.org/wiki/Tetris) game, implemented in Python.
   - All the Tetris rules
   - State of the art graphics
   - Automatic game saving when quitting. If there's a saved game it is automatically loaded, too
-  - Ability to load the latest saved game
   - Ability to pause the game
   - Stats
   - Sound effects!

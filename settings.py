@@ -44,7 +44,7 @@ class GameState:
     PLAYING = 2
     PAUSED = 4
     GAME_OVER = 8
-    SHOW_STATS = 10
+    SHOW_STATS = 16
 
 INFO_PANEL_WIDTH = 150
 
