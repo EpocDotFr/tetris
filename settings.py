@@ -39,6 +39,13 @@ RESOURCES_ROOT = os.path.join(sys._MEIPASS, 'resources') if getattr(sys, 'frozen
 TETRIMINOS_FALLING_EVENT = pygame.USEREVENT + 1
 GAME_DURATION_EVENT = pygame.USEREVENT + 2
 
+
+class GameState:
+    PLAYING = 2
+    PAUSED = 4
+    GAME_OVER = 8
+    SHOW_STATS = 10
+
 INFO_PANEL_WIDTH = 150
 
 PLAYGROUND_WIDTH = COLS * BLOCKS_SIDE_SIZE + (COLS - 1) * GRID_SPACING

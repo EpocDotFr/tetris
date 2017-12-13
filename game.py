@@ -61,10 +61,7 @@ class Game:
         if os.path.isfile(settings.SAVE_FILE_NAME):
             save_game_manager.load_game(settings.SAVE_FILE_NAME, self, self.save_data)
 
-            self.is_paused = False
-            self.is_game_over = False
             self.is_fast_falling = False
-            self.show_stats = False
 
             self._load_random_music()
 
@@ -111,10 +108,7 @@ class Game:
         self.score = 0
         self.duration = 0
 
-        self.is_paused = False
-        self.is_game_over = False
         self.is_fast_falling = False
-        self.show_stats = False
 
         self.started_playing_at = int(time.time())
 
@@ -123,6 +117,8 @@ class Game:
         self._toggle_duration_counter(True)
 
         self._load_random_music()
+
+        self.state = settings.GameState.PLAYING
 
     def _update_falling_interval(self, force=None):
         """Update the Tetrimino's falling event."""
@@ -148,7 +144,7 @@ class Game:
         if self.current_tetrimino.will_collide(self.fallen_blocks):
             self._update_falling_interval(0)
             self._toggle_duration_counter(False)
-            self.is_game_over = True
+            self.state = settings.GameState.GAME_OVER
             self._update_play_time()
 
             logging.info('Game over')
@@ -163,34 +159,39 @@ class Game:
         """Get a random reference to a Tetrimino class."""
         return getattr(tetriminos, random.choice(tetriminos.__all__))
 
-    def _toggle_pause(self, force=None):
+    def _toggle_pause(self, force=None, update_state=True):
         """Toggle pause on/off."""
-        if force is False or (force is None and self.is_paused):
+        if force is False or (force is None and self.state in [settings.GameState.PAUSED, settings.GameState.SHOW_STATS]):
             self._update_falling_interval()
             self._toggle_duration_counter(True)
-            self.is_paused = False
+
             self.started_playing_at = int(time.time())
 
+            if update_state:
+                self.state = settings.GameState.PLAYING
+
             logging.info('Game unpaused')
-        elif force is True or (force is None and not self.is_paused):
+        elif force is True or (force is None and self.state not in [settings.GameState.PAUSED, settings.GameState.SHOW_STATS]):
             self._update_falling_interval(0)
             self._toggle_duration_counter(False)
-            self.is_paused = True
             self._update_play_time()
+
+            if update_state:
+                self.state = settings.GameState.PAUSED
 
             logging.info('Game paused')
 
     def _toggle_stats(self, force=None):
-        if force is False or (force is None and self.show_stats):
-            self.show_stats = False
+        if force is False or (force is None and self.state == settings.GameState.SHOW_STATS):
+            self._toggle_pause(False, False)
 
-            self._toggle_pause(False)
+            self.state = settings.GameState.PLAYING
 
             logging.info('Hiding stats')
-        elif force is True or (force is None and not self.show_stats):
-            self._toggle_pause(True)
+        elif force is True or (force is None and self.state != settings.GameState.SHOW_STATS):
+            self._toggle_pause(True, False)
 
-            self.show_stats = True
+            self.state = settings.GameState.SHOW_STATS
 
             logging.info('Showing stats')
 
@@ -295,8 +296,8 @@ class Game:
             event_handlers = [
                 self._event_quit,
                 self._event_falling_tetrimino,
-                self._event_game_duration,
-                self._event_game_key
+                self._event_game_key,
+                self._event_game_duration
             ]
 
             for handler in event_handlers:
@@ -308,19 +309,17 @@ class Game:
 
         self._draw_playground()
 
-        if not self.is_game_over:
+        if self.state != settings.GameState.GAME_OVER:
             self._draw_blocks(self.current_tetrimino.blocks)
 
         self._draw_blocks(self.fallen_blocks)
         self._draw_info_panel()
 
-        if self.show_stats:
+        if self.state == settings.GameState.SHOW_STATS:
             self._draw_stats_screen()
-
-        if self.is_paused and not self.show_stats:
+        elif self.state == settings.GameState.PAUSED:
             self._draw_pause_screen()
-
-        if self.is_game_over and not self.show_stats:
+        elif self.state == settings.GameState.GAME_OVER:
             self._draw_game_over_screen()
 
         # PyGame-related updates
@@ -334,7 +333,7 @@ class Game:
     def _event_quit(self, event):
         """Called when the game must be closed."""
         if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            if not self.is_game_over:
+            if self.state != settings.GameState.GAME_OVER:
                 save_game_manager.save_game(settings.SAVE_FILE_NAME, self, self.save_data)
 
             self._update_play_time()
@@ -372,7 +371,7 @@ class Game:
     def _event_game_key(self, event):
         """Handle the game keys."""
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_PAUSE and not self.is_game_over and not self.show_stats:
+            if event.key == pygame.K_PAUSE and self.state not in [settings.GameState.GAME_OVER, settings.GameState.SHOW_STATS]:
                 self._toggle_pause()
 
                 return True
@@ -384,28 +383,28 @@ class Game:
                 self._toggle_stats()
 
                 return True
-            elif event.key == pygame.K_LEFT and not self.is_paused and not self.is_game_over:
+            elif event.key == pygame.K_LEFT and self.state not in [settings.GameState.PAUSED, settings.GameState.GAME_OVER]:
                 if self.current_tetrimino.move_left(self.fallen_blocks):
                     self.sounds['move'].play()
 
                     return True
-            elif event.key == pygame.K_RIGHT and not self.is_paused and not self.is_game_over:
+            elif event.key == pygame.K_RIGHT and self.state not in [settings.GameState.PAUSED, settings.GameState.GAME_OVER]:
                 if self.current_tetrimino.move_right(self.fallen_blocks):
                     self.sounds['move'].play()
 
                     return True
-            elif event.key == pygame.K_DOWN and not self.is_paused and not self.is_game_over:
+            elif event.key == pygame.K_DOWN and self.state not in [settings.GameState.PAUSED, settings.GameState.GAME_OVER]:
                 self._update_falling_interval(settings.TETRIMINOS_FAST_FALLING_INTERVAL)
                 self.is_fast_falling = True
 
                 return True
-            elif event.key == pygame.K_UP and not self.is_paused and not self.is_game_over:
+            elif event.key == pygame.K_UP and self.state not in [settings.GameState.PAUSED, settings.GameState.GAME_OVER]:
                 if self.current_tetrimino.rotate(self.fallen_blocks):
                     self.sounds['rotate'].play()
 
                     return True
         elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_DOWN and not self.is_paused and not self.is_game_over:
+            if event.key == pygame.K_DOWN and self.state not in [settings.GameState.PAUSED, settings.GameState.GAME_OVER]:
                 self._update_falling_interval()
                 self.is_fast_falling = False
 
