@@ -62,7 +62,7 @@ levels (they are initially falling for one block down every 1 second).
 
 ## Credits
 
-  - Icon by [Everaldo Coelho](https://www.iconfinder.com/icons/3459/computer_game_tetris_icon) (freeware)
+  - Icon by [Everaldo Coelho](https://www.iconfinder.com/icons/3459/computer_game_tetris_icon) (LGPL)
   - Font by [Typodermic Fonts Inc](http://www.dafont.com/coolvetica.font) (freeware)
   - Sound effects by [Kenney](https://kenney.nl/assets/digital-audio) (CC0 1.0 Universal)
   - Musics by [SoundImage.org](http://soundimage.org/) (Royalty-Free)
