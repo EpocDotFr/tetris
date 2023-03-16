@@ -94,7 +94,10 @@ class Game:
         """Load and play a random music."""
         logging.info('Loading random music')
 
-        helpers.load_random_music(['its_raining_pixels.wav', 'its_always_sunny_in_the_80s.wav'], volume=settings.MUSIC_VOLUME)
+        helpers.load_random_music(
+            ['its_raining_pixels.wav', 'its_always_sunny_in_the_80s.wav'],
+            volume=settings.MUSIC_VOLUME
+        )
 
     def _start_new_game(self):
         """Start a new game."""
@@ -125,7 +128,20 @@ class Game:
         if force is not None:
             pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, force)
         else:
-            pygame.time.set_timer(settings.TETRIMINOS_FALLING_EVENT, settings.TETRIMINOS_INITIAL_FALLING_INTERVAL - self.level * settings.TETRIMINOS_FALLING_INTERVAL_DECREASE_STEP)
+            value = settings.TETRIMINOS_INITIAL_FALLING_INTERVAL - self.level * settings.TETRIMINOS_FALLING_INTERVAL_DECREASE_STEP
+
+            # Prevent the falling event timer to reach a value of zero or below,
+            # thus preventing any blocks to fall.
+            # Set an arbitrary - inhuman - value of 10 milliseconds instead so
+            # the player can still - barely - play.
+            # https://github.com/EpocDotFr/tetris/issues/1
+            if value <= 0:
+                value = 10
+
+            pygame.time.set_timer(
+                settings.TETRIMINOS_FALLING_EVENT,
+                value
+            )
 
     def _toggle_duration_counter(self, enable=True):
         """Update the game duration counter event."""

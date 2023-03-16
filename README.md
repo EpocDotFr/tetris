@@ -58,7 +58,8 @@ lines, the score is also doubled. Taking the previous example: 80 points x 2 = 1
 ### Levels
 
 You get to the next level every 8 completed lines. Tetriminos will fall 100 milliseconds faster for each gained
-levels (they are initially falling for one block down every 1 second).
+levels (they are initially falling for one block down every 1 second). You reach the fastest - inhuman - falling
+speed starting level 10.
 
 ## Credits
 
